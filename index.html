@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野口衣織 沼落ちガイド</title>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9333ea', // purple-600
+                        secondary: '#faf5ff', // purple-50
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            /* gray-50 */
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const DATA = [
+            {
+                id: 1,
+                title: "手遅れcaution (Live)",
+                category: "ライブ",
+                url: "https://www.youtube.com/watch?v=uMpEyaRmiy8",
+                year: 2022,
+                comment: "収録：全国ツアー「全部、内緒。」〜横浜アリーナ〜",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 2,
+                title: "呪って呪って (MV)",
+                category: "MV",
+                url: "https://www.youtube.com/watch?v=cyRZGtNx_a4&list=RDcyRZGtNx_a4&start_radio=1",
+                year: 2024,
+                comment: "ダークな世界観と美しさが共存するMV。表情管理が神がかっています。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 3,
+                title: "祝祭 (MV)",
+                category: "MV",
+                url: "https://youtu.be/m8WtzVPXxwU?si=qnAF4umO8LckzYQo",
+                year: 2021,
+                comment: "執事と令嬢の世界観が最高。衣織さんのイケメンな執事姿と妖艶な令嬢姿のギャップに注目。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 4,
+                title: "狂想カタストロフィ (MV)",
+                category: "MV",
+                url: "https://youtu.be/RG_B3gfOzLo?si=8yZhPWzc-yind2uR",
+                year: 2023,
+                comment: "野口衣織センター曲。崩壊と再生をテーマにしたような力強くも儚いパフォーマンス。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 5,
+                title: "知らんけど (MV)",
+                category: "MV",
+                url: "https://youtu.be/IplzPaWoFXo?si=xA1bAwGRmYbhpZGF",
+                year: 2022,
+                comment: "野口衣織・佐々木舞香・諸橋沙夏によるユニット曲。大人っぽい歌詞と歌唱力が光る。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 6,
+                title: "Be Selfish (MV)",
+                category: "MV",
+                url: "https://youtu.be/suf7S4AKdmY?si=ovqD7qzqqqp5ugnl",
+                year: 2022,
+                comment: "野口衣織センター曲。韓国で撮影されたMVは色彩豊かで、自分らしく生きる肯定感をくれる。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 7,
+                title: "Queens (MV)",
+                category: "MV",
+                url: "https://youtu.be/Pyts1pc0u1A?si=gpuDuYSsYoqgUtAM",
+                year: 2025,
+                comment: "圧倒的な女王の風格。強くて美しいイコラブを象徴する一曲。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 8,
+                title: "ナツマトペ (野口衣織Ver.) (MV)",
+                category: "MV",
+                url: "https://youtu.be/zMdTDUijeio?si=4PNeCTUaVHSItXmQ",
+                year: 2023,
+                comment: "夏全開の爽やかなナンバー。衣織さんの弾ける笑顔とダンスを堪能できるソロバージョン。",
+                tags: ["かわいい"]
+            },
+            {
+                id: 9,
+                title: "仲直りシュークリーム (MV)",
+                category: "MV",
+                url: "https://youtu.be/D0SfIi-0Zpo?si=Se2oLx6iQYZbEwJr",
+                year: 2024,
+                comment: "野口衣織・佐々木舞香の「いかりんぐ」デュエット。可愛すぎる喧嘩と仲直りに悶絶必至。",
+                tags: ["かわいい"]
+            },
+            {
+                id: 10,
+                title: "君と私の歌 (MV)",
+                category: "MV",
+                url: "https://youtu.be/juImxVpogRY?si=mxGg_gnOLfdPYiEe",
+                year: 2020,
+                comment: "野口衣織センター曲。ファンへの愛が詰まった歌詞と、衣織さんの真っ直ぐな歌声が響くアイドルソング。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 11,
+                title: "超特急逃走中 (MV)",
+                category: "MV",
+                url: "https://youtu.be/d20dEAtbL08?si=GiLEFjjW8vS_hTy7",
+                year: 2025,
+                comment: "疾走感あふれるナンバー。コミカルでキュートなMVは何度見ても楽しい。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 12,
+                title: "ラブクリエイト (MV)",
+                category: "MV",
+                url: "https://youtu.be/11SXnMJKljk?si=EusjOrietc2ScOGI",
+                year: 2023,
+                comment: "ファンへの感謝と愛を歌った楽曲。底抜けに明るい衣織さんの笑顔に救われる。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 13,
+                title: "この空がトリガー (MV)",
+                category: "MV",
+                url: "https://youtu.be/20QJax8CwQo?si=Zsj42lR8XPL5zFAE",
+                year: 2023,
+                comment: "切ない恋心を歌った王道アイドルソング。衣織さんの切ない表情演技が光る。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 14,
+                title: "拝啓 貴方様 (MV)",
+                category: "MV",
+                url: "https://youtu.be/PFBhWKdjBTQ?si=XL2ouwI30U52wGuF",
+                year: 2021,
+                comment: "野口衣織ソロ曲。和テイストとロックが融合した、彼女の世界観が全開の意欲作。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 15,
+                title: "手遅れcaution (MV)",
+                category: "MV",
+                url: "https://youtu.be/w0N0TiOlAY0?si=9DnrsXZ34xWE_apd",
+                year: 2018,
+                comment: "イコラブの表現の幅を広げたダークな楽曲。衣織さんの「憑依」が話題になった衝撃作。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 16,
+                title: "だからとて (MV)",
+                category: "MV",
+                url: "https://youtu.be/zKkx-rtOIPo?si=qIrKc-HXpx8HoM8d",
+                year: 2023,
+                comment: "野口衣織センター曲。片想いの切なさと強がりを繊細に表現した名曲。",
+                tags: ["切ない"]
+            },
+            {
+                id: 17,
+                title: "虹の素 (MV)",
+                category: "MV",
+                url: "https://youtu.be/qoPqgiQVhok?si=FwsQg_N7YRlMv9xd",
+                year: 2019,
+                comment: "野口衣織・佐々木舞香のデュエット。二人の歌唱力がぶつかり合う、エモーショナルな一曲。",
+                tags: ["切ない"]
+            },
+            {
+                id: 18,
+                title: "どこが好きか言って (MV)",
+                category: "MV",
+                url: "https://youtu.be/Mdsq8dUNvrI?si=oehnDwlNexZx2eH4",
+                year: 2023,
+                comment: "カップリング曲ながら根強い人気。関係性の機微を歌う衣織さんの表現力が素晴らしい。",
+                tags: ["切ない"]
+            },
+            {
+                id: 19,
+                title: "好きって、言えなかった (MV)",
+                category: "MV",
+                url: "https://youtu.be/Jsz-Hzb4fyY?si=rGDASZWRsedK-CD9",
+                year: 2022,
+                comment: "野口衣織センター曲。青春の甘酸っぱさと痛みを表現したドラマ仕立てのMV。",
+                tags: ["切ない"]
+            },
+            {
+                id: 20,
+                title: "24/7 (MV)",
+                category: "MV",
+                url: "https://youtu.be/aEZJGY4_aQo?si=7QDkeQZn_3rMw7Xs",
+                year: 2021,
+                comment: "K-POPライクなダンスナンバー。衣織さんのダンススキルとクールなラップが堪能できる。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 21,
+                title: "だからとて (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/khSDmjXGjkE",
+                year: 2025,
+                comment: "収録：ARENA TOUR 2025「〜Timeless Tales〜」",
+                tags: ["切ない"]
+            },
+            {
+                id: 22,
+                title: "超特急逃走中 (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/NjQPFUVKMCQ",
+                year: 2025,
+                comment: "収録：ARENA TOUR 2025「〜Timeless Tales〜」",
+                tags: ["アイドル"]
+            },
+            {
+                id: 23,
+                title: "ラブクリエイト (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/Ez3V5ipHdsI",
+                year: 2025,
+                comment: "収録：ARENA TOUR 2025「〜Timeless Tales〜」",
+                tags: ["アイドル"]
+            },
+            {
+                id: 24,
+                title: "仲直りシュークリーム (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/1zGR6n1vlqs",
+                year: 2025,
+                comment: "収録：ARENA TOUR 2025「〜Timeless Tales〜」",
+                tags: ["かわいい"]
+            },
+            {
+                id: 25,
+                title: "呪って呪って (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/T8zqbIvO_9M?si=RiG_KaAQXLbxvN9_",
+                year: 2024,
+                comment: "収録：ARENA TOUR 2024「Tell me what's more than “LOVE”」",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 26,
+                title: "狂想カタストロフィ (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/bovO70Ml0gE",
+                year: 2024,
+                comment: "収録：ARENA TOUR 2024「Tell me what's more than “LOVE”」",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 27,
+                title: "ナツマトペ (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/J5M3vX9ioIU?si=qg9PbFS3MwxR2fpq",
+                year: 2023,
+                comment: "収録：6th ANNIVERSARY PREMIUM CONCERT",
+                tags: ["かわいい"]
+            },
+            {
+                id: 28,
+                title: "祝祭 (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/497KgIJTgSs",
+                year: 2023,
+                comment: "収録：6th ANNIVERSARY PREMIUM CONCERT",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 29,
+                title: "君と私の歌 (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/Vp-thQ5EtUE",
+                year: 2023,
+                comment: "収録：全国ツアー2023「Today is your Trigger」",
+                tags: ["アイドル"]
+            },
+            {
+                id: 30,
+                title: "ヒロインズ (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/adDqIY7Xs-U?si=YTGpAu5TYMIwjR7-",
+                year: 2023,
+                comment: "収録：6th ANNIVERSARY PREMIUM CONCERT",
+                tags: []
+            },
+            {
+                id: 31,
+                title: "この空がトリガー (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/vF8cxG05kcM?si=V-HYkWEv-7rCVtCI",
+                year: 2023,
+                comment: "収録：全国ツアー2023「Today is your Trigger」",
+                tags: ["アイドル"]
+            },
+            {
+                id: 32,
+                title: "まほろばアスタリスク (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/HwSH_g2SaKo",
+                year: 2022,
+                comment: "収録：全国ツアー2022「どう考えても君ってイコラブのこと好きじゃん」",
+                tags: ["切ない"]
+            },
+            {
+                id: 33,
+                title: "Be Selfish (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/vmd-luidsqo?si=X3Nhf8-KKd4UTe8v",
+                year: 2022,
+                comment: "収録：5th ANNIVERSARY PREMIUM CONCERT",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 34,
+                title: "記憶のどこかで (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/FCti36ZBQBU",
+                year: 2021,
+                comment: "収録：4th ANNIVERSARY PREMIUM CONCERT",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 35,
+                title: "フラジャイル (Live)",
+                category: "ライブ",
+                url: "https://youtu.be/0FFpW-dzTdY?si=r9nmfrw21cSeXYJg",
+                year: 2021,
+                comment: "収録：佐竹のん乃卒業コンサート〜君のいる世界〜",
+                tags: ["切ない"]
+            },
+            {
+                id: 36,
+                title: "ベテルギウス (歌ってみた)",
+                category: "歌ってみた",
+                url: "https://youtu.be/fQrqvz3vhg0",
+                year: 2023,
+                comment: "優里の「ベテルギウス」をカバー。力強くも切ない歌声が心に響く。",
+                tags: ["切ない"]
+            },
+            {
+                id: 37,
+                title: "コネクト (歌ってみた)",
+                category: "歌ってみた",
+                url: "https://youtu.be/vCmOCkcC9g8",
+                year: 2020,
+                comment: "ClariSの「コネクト」を佐々木舞香とのユニット「いかりんぐ」でカバー。二人のハーモニーが絶品。",
+                tags: ["切ない"]
+            },
+            {
+                id: 38,
+                title: "夜に駆ける (歌ってみた)",
+                category: "歌ってみた",
+                url: "https://youtu.be/5pyY4YyQoXQ",
+                year: 2020,
+                comment: "YOASOBIの「夜に駆ける」をソロカバー。難易度の高い楽曲を見事に歌い上げている。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 39,
+                title: "うっせぇわ (歌ってみた)",
+                category: "歌ってみた",
+                url: "https://youtu.be/rMT4X8zR7qY",
+                year: 2021,
+                comment: "Adoの「うっせぇわ」をカバー。がなり声や表現力の幅広さに圧倒される一曲。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 40,
+                title: "惑星ループ (踊ってみた)",
+                category: "踊ってみた",
+                url: "https://youtu.be/28P2ZI-aweU",
+                year: 2020,
+                comment: "ナユタン星人の「惑星ループ」を山本杏奈とカバー。キュートなダンスと表情に注目。",
+                tags: []
+            },
+            {
+                id: 41,
+                title: "君と夏フェス (踊ってみた)",
+                category: "踊ってみた",
+                url: "https://youtu.be/mUizdXcxqeA",
+                year: 2021,
+                comment: "SHISHAMOの「君と夏フェス」を浴衣姿でダンスカバー。夏の情緒と可愛らしさが溢れている。",
+                tags: []
+            },
+            {
+                id: 42,
+                title: "Poison Girl (踊ってみた)",
+                category: "踊ってみた",
+                url: "https://youtu.be/YpC3v30V9Ac",
+                year: 2021,
+                comment: " =LOVEの楽曲「Poison Girl」をメンバーと踊ってみた動画。",
+                tags: []
+            },
+            {
+                id: 43,
+                title: "とくべチュ、して (Focus)",
+                category: "フォーカス",
+                url: "https://youtu.be/XzpKlwETET4?si=Is-F4hxspUdKfGrx",
+                year: 2025,
+                comment: "2025年5月20日公開。推しカメラで捉えた、特別でキュートなパフォーマンス。",
+                tags: ["かわいい"]
+            },
+            {
+                id: 44,
+                title: "絶対アイドル辞めないで (Focus)",
+                category: "フォーカス",
+                url: "https://youtu.be/olmZqgAYUTk?si=Vyl4fJ9XmF8IAbDy",
+                year: 2024,
+                comment: "2024年7月20日公開。究極のアイドルソングをDance Focus Ver.で。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 45,
+                title: "この空がトリガー (Focus)",
+                category: "フォーカス",
+                url: "https://youtu.be/sCneQ9nzUpA?si=V62SZYf11RED-LdB",
+                year: 2023,
+                comment: "2023年2月1日公開。切ない表情とダンスの美しさが際立つDance Focus Ver.。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 46,
+                title: "呪って呪って (Dance MV)",
+                category: "MV",
+                url: "https://youtu.be/K-3LQ9A2ecY?si=g-Im8aSmDl7HiZHn",
+                year: 2024,
+                comment: "呪いダンスを堪能できるダンスバージョン。複雑なフォーメーション移動にも注目。",
+                tags: ["カッコいい"]
+            },
+            {
+                id: 47,
+                title: "ナツマトペ (Dance MV)",
+                category: "MV",
+                url: "https://youtu.be/EDvT9fpHTQ4?si=OVV3acHa7gt8O-99",
+                year: 2023,
+                comment: "賑やかで楽しい振り付けが魅力。見ているだけで元気になれるダンスナンバー。",
+                tags: ["かわいい"]
+            },
+            {
+                id: 48,
+                title: "この空がトリガー (Dance MV)",
+                category: "MV",
+                url: "https://youtu.be/ENs8yzQe7uk?si=uo8G7IlwQPXLI1Pp",
+                year: 2023,
+                comment: "繊細な感情表現をダンスで魅せる。歌詞の世界観を体現した振り付けが美しい。",
+                tags: ["アイドル"]
+            },
+            {
+                id: 49,
+                title: "Be Selfish (Dance MV)",
+                category: "MV",
+                url: "https://youtu.be/h-nR1fEnPJ4?si=_Ue9YLg5Q6Pykwk1",
+                year: 2022,
+                comment: "自由で自信に満ちたダンスパフォーマンス。私らしく生きる強さを表現。",
+                tags: ["カッコいい"]
+            }
+        ];
+
+        const CATEGORIES = ["すべて", "MV", "ライブ", "歌ってみた", "踊ってみた", "フォーカス", "バラエティ"];
+        const TAGS = ["カッコいい", "かわいい", "アイドル", "切ない"];
+
+        const getYouTubeId = (url) => {
+            try {
+                const urlObj = new URL(url);
+                if (urlObj.hostname === "youtu.be") {
+                    return urlObj.pathname.slice(1);
+                }
+                const v = urlObj.searchParams.get("v");
+                if (v) return v;
+                // Handle cases like embed URLs if necessary, but current data is standard
+                return null;
+            } catch (e) {
+                return null;
+            }
+        };
+
+        const App = () => {
+            const [activeCategory, setActiveCategory] = useState("すべて");
+            const [activeTag, setActiveTag] = useState(null);
+            const [sortOrder, setSortOrder] = useState("desc"); // 'desc' | 'asc'
+
+            const filterByCategory = (item) => {
+                if (activeCategory === "すべて") return true;
+                return item.category === activeCategory;
+            };
+
+            const filterByTag = (item) => {
+                if (!activeTag) return true;
+                return item.tags && item.tags.includes(activeTag);
+            };
+
+            const filteredData = DATA
+                .filter(filterByCategory)
+                .filter(filterByTag)
+                .sort((a, b) => {
+                    if (a.year !== b.year) {
+                        return sortOrder === 'asc' ? a.year - b.year : b.year - a.year;
+                    }
+                    return a.title.localeCompare(b.title, 'ja');
+                });
+
+            return (
+                <div className="min-h-screen bg-white w-full max-w-md md:max-w-5xl mx-auto shadow-2xl flex flex-col border-x border-gray-100 my-0 md:my-8 md:rounded-3xl overflow-hidden transition-all duration-300">
+                    {/* Header */}
+                    <header className="bg-primary text-white p-6 text-center shadow-md z-10 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-full bg-white opacity-10 transform scale-150 rotate-12 origin-top-left pointer-events-none"></div>
+                        <h1 className="text-2xl font-bold tracking-wider relative z-10">野口衣織<br /><span className="text-sm font-normal opacity-90 block mt-1">沼落ちガイド</span></h1>
+                    </header>
+
+                    {/* Filter & Sort Controls */}
+                    <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 border-b border-gray-100 p-4 shadow-sm space-y-3">
+                        <div className="flex flex-col gap-4">
+                            {/* Category Buttons */}
+                            <div className="flex flex-wrap gap-2">
+                                {CATEGORIES.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setActiveCategory(cat)}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 transform ${activeCategory === cat
+                                            ? "bg-primary text-white shadow-lg scale-105 ring-2 ring-primary ring-offset-2"
+                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                                            }`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Tag Filters */}
+                            <div className="flex flex-wrap gap-1.5">
+                                {TAGS.map(tag => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 border ${activeTag === tag
+                                            ? "bg-gray-800 text-white border-gray-800 shadow-md"
+                                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                                            }`}
+                                    >
+                                        <span className="mr-1">#</span>{tag}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Sort Control */}
+                            <div className="flex justify-start items-center gap-2 text-xs text-gray-500 whitespace-nowrap">
+                                <span>公開年:</span>
+                                <div className="flex bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setSortOrder('asc')}
+                                        className={`px-3 py-1 rounded-md transition-all ${sortOrder === 'asc' ? 'bg-white text-primary shadow-sm font-bold' : 'hover:bg-gray-200'}`}
+                                    >
+                                        昇順
+                                    </button>
+                                    <button
+                                        onClick={() => setSortOrder('desc')}
+                                        className={`px-3 py-1 rounded-md transition-all ${sortOrder === 'desc' ? 'bg-white text-primary shadow-sm font-bold' : 'hover:bg-gray-200'}`}
+                                    >
+                                        降順
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Content List */}
+                    <main className="flex-1 p-4 md:p-6 bg-gray-50/50">
+                        {filteredData.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredData.map(item => {
+                                    const videoId = getYouTubeId(item.url);
+                                    const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+
+                                    return (
+                                        <div key={item.id} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 h-full flex flex-col">
+                                            {thumbnailUrl && (
+                                                <div className="relative aspect-video w-full overflow-hidden">
+                                                    <img
+                                                        src={thumbnailUrl}
+                                                        alt={item.title}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
+                                                </div>
+                                            )}
+                                            <div className="p-6 flex flex-col flex-grow">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex gap-2">
+                                                        <span className={`text-[10px] font-bold px-3 py-1 rounded-full text-white uppercase tracking-wider ${item.category === 'MV' ? 'bg-gradient-to-r from-pink-500 to-rose-500' :
+                                                            item.category === 'ライブ' ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                                                                item.category === '歌ってみた' ? 'bg-gradient-to-r from-purple-500 to-violet-500' :
+                                                                    item.category === '踊ってみた' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
+                                                                        item.category === 'フォーカス' ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
+                                                                            'bg-gray-500'
+                                                            }`}>
+                                                            {item.category}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold px-3 py-1 rounded-full text-gray-500 bg-gray-100 border border-gray-200">
+                                                            {item.year}年
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Tags */}
+                                                {item.tags && item.tags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mb-2">
+                                                        {item.tags.map(tag => (
+                                                            <span key={tag} className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                                                                #{tag}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                                                    {item.title}
+                                                </h3>
+                                                <div className="relative mb-5 flex-grow">
+                                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/30 rounded-full"></div>
+                                                    <p className="text-sm text-gray-600 pl-4 py-1 italic leading-relaxed line-clamp-3">
+                                                        {item.comment}
+                                                    </p>
+                                                </div>
+
+                                                <a
+                                                    href={item.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="block w-full text-center bg-white border-2 border-primary text-primary font-bold py-3 rounded-xl hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg mt-auto"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                                    </svg>
+                                                    動画を見る
+                                                </a>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="text-center py-16 px-4">
+                                <div className="bg-gray-50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4 text-gray-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-400 mb-1">コンテンツ準備中</h3>
+                                <p className="text-sm text-gray-400">このカテゴリーのコンテンツは<br />まだありません</p>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="p-6 text-center text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50">
+                        <p>© 2024 Iori Noguchi Fan App MVP</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
