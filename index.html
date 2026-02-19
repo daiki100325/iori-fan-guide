@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>＝LOVE野口衣織　非公式 沼落ちガイド</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -19,6 +25,10 @@
                     colors: {
                         primary: '#9333ea', // purple-600
                         secondary: '#faf5ff', // purple-50
+                    },
+                    fontFamily: {
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                        rounded: ['"M PLUS Rounded 1c"', 'sans-serif'],
                     }
                 }
             }
@@ -26,7 +36,7 @@
     </script>
     <style>
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Zen Kaku Gothic New', sans-serif;
             background-color: #f9fafb;
             /* gray-50 */
         }
@@ -43,6 +53,18 @@
             scrollbar-width: none;
             /* Firefox */
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -50,7 +72,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         const DATA = [
             {
@@ -507,167 +529,353 @@
                 }
                 const v = urlObj.searchParams.get("v");
                 if (v) return v;
-                // Handle cases like embed URLs if necessary, but current data is standard
                 return null;
             } catch (e) {
                 return null;
             }
         };
 
-        const App = () => {
-            const [activeCategory, setActiveCategory] = useState("すべて");
-            const [activeTag, setActiveTag] = useState(null);
-            const [showUnwatchedOnly, setShowUnwatchedOnly] = useState(false);
-            const [sortOrder, setSortOrder] = useState("desc"); // 'desc' | 'asc'
+        // --- Components ---
 
-            // Watched status state
-            const [watchedIds, setWatchedIds] = useState(() => {
-                const saved = localStorage.getItem('watchedIds');
-                return saved ? JSON.parse(saved) : [];
-            });
-
-            // Toggle watched status
-            const toggleWatched = (id) => {
-                setWatchedIds(prev => {
-                    if (!prev.includes(id)) {
-                        const updated = [...prev, id];
-                        localStorage.setItem('watchedIds', JSON.stringify(updated));
-                        return updated;
-                    }
-                    return prev;
-                });
-            };
-
-            // Helper to check if watched
-            const isWatched = (id) => watchedIds.includes(id);
-
-            // Calculate Numaochido
-            const watchedPercentage = Math.round((watchedIds.length / DATA.length) * 100);
-
-            const filterByCategory = (item) => {
-                if (activeCategory === "すべて") return true;
-                return item.category === activeCategory;
-            };
-
-            const filterByTag = (item) => {
-                if (!activeTag) return true;
-                return item.tags && item.tags.includes(activeTag);
-            };
-
-            const filterByUnwatched = (item) => {
-                if (!showUnwatchedOnly) return true;
-                return !watchedIds.includes(item.id);
-            };
-
-            const filteredData = DATA
-                .filter(filterByCategory)
-                .filter(filterByTag)
-                .filter(filterByUnwatched)
-                .sort((a, b) => {
-                    if (a.year !== b.year) {
-                        return sortOrder === 'asc' ? a.year - b.year : b.year - a.year;
-                    }
-                    return a.title.localeCompare(b.title, 'ja');
-                });
+        const NavMenu = ({ activePage, setActivePage }) => {
+            const menuItems = [
+                {
+                    id: 'home', label: '沼ガイド', icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                    )
+                },
+                {
+                    id: 'profile', label: '野口衣織とは？', icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                    )
+                },
+                {
+                    id: 'concept', label: 'サイトコンセプト', icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                    )
+                },
+            ];
 
             return (
-                <div className="min-h-screen bg-white w-full max-w-md md:max-w-7xl mx-auto shadow-2xl flex flex-col border-x border-gray-100 my-0 md:my-8 md:rounded-3xl overflow-hidden transition-all duration-300">
-                    {/* Header */}
-                    <header className="bg-primary text-white p-6 text-center shadow-md z-10 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-full bg-white opacity-10 transform scale-150 rotate-12 origin-top-left pointer-events-none"></div>
-
-                        {/* Numaochido Gauge */}
-                        <div className="absolute top-4 right-4 z-20 flex flex-col items-end">
-                            <span className="text-[10px] font-bold opacity-90 mb-1">沼落ち度</span>
-                            <div className="flex items-center gap-2">
-                                <div className="w-20 md:w-32 h-2.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 shadow-[0_0_10px_rgba(253,224,71,0.6)] transition-all duration-1000 ease-out"
-                                        style={{ width: `${watchedPercentage}%` }}
-                                    ></div>
+                <div className="bg-white/95 backdrop-blur-md border-t md:border-t-0 md:border-b border-gray-200 flex justify-center fixed bottom-0 left-0 w-full z-50 md:sticky md:top-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] md:shadow-sm pb-safe transition-transform duration-300">
+                    <div className="flex w-full max-w-md md:max-w-2xl justify-between px-2 pb-1 md:pb-0">
+                        {menuItems.map(item => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActivePage(item.id)}
+                                className={`flex-1 flex flex-col items-center justify-center py-2 md:py-4 gap-1 transition-all duration-300 relative group active:scale-95 ${activePage === item.id ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
+                            >
+                                <div className={`p-1.5 md:p-2 rounded-full transition-all duration-300 ${activePage === item.id ? 'bg-primary/10 scale-110' : 'group-hover:bg-gray-50'}`}>
+                                    {item.icon}
                                 </div>
-                                <span className="text-sm font-bold tabular-nums">{watchedPercentage}%</span>
+                                <span className={`text-[10px] md:text-xs font-bold ${activePage === item.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>{item.label}</span>
+                                {activePage === item.id && (
+                                    <span className="absolute top-0 md:top-auto md:bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-1 md:h-0.5 bg-primary rounded-b-full md:rounded-t-full"></span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const Profile = () => {
+            return (
+                <div className="p-6 md:p-10 bg-gray-50/50 min-h-[500px]">
+                    <div className="max-w-3xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-8 animate-[fadeIn_0.5s_ease-out]">
+                        <div className="text-center space-y-2 border-b border-gray-100 pb-6">
+                            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">PROFILE</span>
+                            <h2 className="text-3xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800">野口 衣織 とは？</h2>
+                            <p className="text-primary font-bold tracking-widest text-sm">NOGUCHI IORI</p>
+                        </div>
+
+                        <div className="space-y-6 md:px-12">
+                            <div className="bg-purple-50 p-6 rounded-2xl text-center">
+                                <p className="text-lg font-bold text-gray-800 mb-2">指原莉乃プロデュースのアイドルグループ<br /><span className="text-primary text-xl">「＝LOVE（イコールラブ）」</span>のメンバー</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex border-b border-gray-100 pb-2">
+                                    <span className="w-24 text-gray-400 font-bold text-sm">生年月日</span>
+                                    <span className="font-bold text-gray-700">2000年4月26日</span>
+                                </div>
+                                <div className="flex border-b border-gray-100 pb-2">
+                                    <span className="w-24 text-gray-400 font-bold text-sm">出身地</span>
+                                    <span className="font-bold text-gray-700">茨城県</span>
+                                </div>
+                                <div className="flex border-b border-gray-100 pb-2">
+                                    <span className="w-24 text-gray-400 font-bold text-sm">血液型</span>
+                                    <span className="font-bold text-gray-700">O型</span>
+                                </div>
+                                <div className="flex border-b border-gray-100 pb-2">
+                                    <span className="w-24 text-gray-400 font-bold text-sm">星座</span>
+                                    <span className="font-bold text-gray-700">おうし座</span>
+                                </div>
+                                <div className="flex border-b border-gray-100 pb-2">
+                                    <span className="w-24 text-gray-400 font-bold text-sm">身長</span>
+                                    <span className="font-bold text-gray-700">161cm</span>
+                                </div>
+                            </div>
+
+                            <div className="text-right text-xs text-gray-400 mt-4">
+                                <p>（引用：＝LOVE Official Fan Club プロフィール）</p>
+                            </div>
+
+                            <div className="bg-white border-2 border-purple-50 p-6 rounded-xl mt-8">
+                                <h3 className="font-bold text-primary mb-3 text-center flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    衣織沼ポイント
+                                </h3>
+                                <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                                    歌唱力、表現力、ビジュアル、そしてオタク気質な性格のギャップが最大の魅力。
+                                    ライブでは「憑依型」とも評される鬼気迫るパフォーマンスで観客を圧倒する一方、
+                                    バラエティや配信では親しみやすいキャラクターとお酒好きな一面を見せるなど、
+                                    知れば知るほど抜け出せない「底なし沼」のような魅力を持っています。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Concept = () => {
+            return (
+                <div className="p-6 md:p-10 bg-gray-50/50 min-h-[500px]">
+                    <div className="max-w-3xl mx-auto space-y-8 animate-[fadeIn_0.5s_ease-out]">
+
+                        {/* 1. 目的 */}
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                            <h2 className="text-xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800 mb-4 flex items-center gap-2">
+                                <span className="bg-primary/10 text-primary p-2 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </span>
+                                サイトの目的
+                            </h2>
+                            <div className="space-y-4 text-gray-600 text-sm leading-7">
+                                <p>
+                                    多種多様な側面を持つ野口衣織さんに興味を持った方が、
+                                    <strong className="text-primary">「自分が気になる野口衣織」</strong>に最短でアクセスできるようにすること。
+                                </p>
+                                <p>
+                                    そして、既存のファンの方が、まだ彼女を知らない友人へ
+                                    <strong className="text-primary">「布教」</strong>する際の手助けとなること。
+                                </p>
+                                <p>
+                                    最終的には、このサイトを通じて公式コンテンツへのアクセスを促し、
+                                    非公式ながらも<strong className="text-primary">「運営への貢献」</strong>に繋げることを目的としています。
+                                </p>
                             </div>
                         </div>
 
-                        <h1 className="text-2xl font-bold tracking-wider relative z-10"><span className="text-lg">＝LOVE</span>野口衣織<br /><span className="text-sm font-normal opacity-90 block mt-1">非公式 沼落ちガイド</span></h1>
-                    </header>
-
-                    {/* Filter & Sort Controls */}
-                    <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-20 border-b border-gray-100 p-4 shadow-sm space-y-3">
-                        <div className="flex flex-col gap-4">
-                            {/* Category Buttons */}
-                            <div className="flex flex-wrap gap-2">
-                                {CATEGORIES.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setActiveCategory(cat)}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 transform ${activeCategory === cat
-                                            ? "bg-primary text-white shadow-lg scale-105 ring-2 ring-primary ring-offset-2"
-                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-                                            }`}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Tag Filters */}
-                            <div className="flex flex-wrap gap-1.5">
-                                {TAGS.map(tag => (
-                                    <button
-                                        key={tag}
-                                        onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 border ${activeTag === tag
-                                            ? "bg-gray-800 text-white border-gray-800 shadow-md"
-                                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                                            }`}
-                                    >
-                                        <span className="mr-1">#</span>{tag}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Sort & Filter Control */}
-                            <div className="flex flex-wrap justify-between items-center gap-4 text-xs text-gray-500 whitespace-nowrap">
-                                {/* Unwatched Filter */}
-                                <button
-                                    onClick={() => setShowUnwatchedOnly(!showUnwatchedOnly)}
-                                    className={`px-4 py-2 rounded-full font-bold transition-all duration-300 border flex items-center gap-2 ${showUnwatchedOnly
-                                        ? "bg-gray-800 text-white border-gray-800 shadow-md"
-                                        : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                                        }`}
-                                >
-                                    <span className={`w-2 h-2 rounded-full ${showUnwatchedOnly ? 'bg-green-400' : 'bg-gray-300'}`}></span>
-                                    未視聴のみ
-                                </button>
-
-                                <div className="flex items-center gap-2">
-                                    <span>公開年:</span>
-                                    <div className="flex bg-gray-100 rounded-lg p-1">
-                                        <button
-                                            onClick={() => setSortOrder('asc')}
-                                            className={`px-3 py-1 rounded-md transition-all ${sortOrder === 'asc' ? 'bg-white text-primary shadow-sm font-bold' : 'hover:bg-gray-200'}`}
-                                        >
-                                            昇順
-                                        </button>
-                                        <button
-                                            onClick={() => setSortOrder('desc')}
-                                            className={`px-3 py-1 rounded-md transition-all ${sortOrder === 'desc' ? 'bg-white text-primary shadow-sm font-bold' : 'hover:bg-gray-200'}`}
-                                        >
-                                            降順
-                                        </button>
+                        {/* 2. 使い方 */}
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                            <h2 className="text-xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800 mb-6 flex items-center gap-2">
+                                <span className="bg-primary/10 text-primary p-2 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                    </svg>
+                                </span>
+                                使い方
+                            </h2>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700 mb-1">ページを切り替える</h3>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            画面下部（PCでは上部）のメニューから、「野口衣織とは？」や「サイトコンセプト」へ移動できます。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700 mb-1">好みの衣織を探す</h3>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            画面下の<span className="inline-block bg-gray-900 text-white text-[10px] px-2 py-0.5 rounded mx-1">絞り込み</span>ボタンを押すと、カテゴリーやタグで動画を検索できます。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700 mb-1">とことん沼る</h3>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            気になった動画を再生しましょう。YouTubeへのリンクになっています。
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700 mb-1">沼落ち度を上げる</h3>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            再生した動画は自動で記録され、ヘッダーの「沼落ち度」ゲージが上昇します。100%を目指してください！
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
+                        {/* 3. ポリシー */}
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                            <h2 className="text-xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800 mb-4 flex items-center gap-2">
+                                <span className="bg-primary/10 text-primary p-2 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </span>
+                                サイトポリシー
+                            </h2>
+                            <div className="space-y-4 text-gray-600 text-sm leading-7">
+                                <div className="bg-gray-50 p-4 rounded-xl space-y-2">
+                                    <h3 className="font-bold text-gray-700 text-xs">著作権の遵守</h3>
+                                    <p className="text-xs">
+                                        当サイトは非公式ファンサイトです。使用している画像の著作権・肖像権は各権利所有者に帰属します。
+                                        権利を侵害する意図はありません。
+                                        サイト内で使用する動画は、すべて公式YouTubeチャンネル等で公開されているものへのリンク（埋め込み）であり、違法アップロードされたコンテンツは取り扱いません。
+                                    </p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl space-y-2">
+                                    <h3 className="font-bold text-gray-700 text-xs">リンク集としての運営</h3>
+                                    <p className="text-xs">
+                                        当サイトはあくまでファンによる「ガイドマップ」です。
+                                        動画の再生や詳細情報の確認は、必ず公式のプラットフォームで行われるように設計しています。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const FilterModal = ({ isOpen, onClose, activeCategory, setActiveCategory, activeTag, setActiveTag, showUnwatchedOnly, setShowUnwatchedOnly, sortOrder, setSortOrder }) => {
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto"
+                        onClick={onClose}
+                        style={{ animation: 'fadeIn 0.3s ease-out' }}
+                    ></div>
+
+                    {/* Bottom Sheet */}
+                    <div
+                        className="bg-white rounded-t-3xl w-full max-w-md md:max-w-2xl p-6 shadow-2xl transform transition-transform duration-300 pointer-events-auto overflow-y-auto max-h-[85vh] animate-[slideUp_0.3s_ease-out]"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+
+                        <div className="space-y-6">
+                            {/* Categories */}
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-400 mb-3">カテゴリー</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {CATEGORIES.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setActiveCategory(cat)}
+                                            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 ${activeCategory === cat
+                                                ? "bg-primary text-white shadow-md ring-2 ring-primary ring-offset-1"
+                                                : "bg-gray-100 text-gray-500 active:bg-gray-200"
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Tags */}
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-400 mb-3">タグ</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {TAGS.map(tag => (
+                                        <button
+                                            key={tag}
+                                            onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                                            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 border ${activeTag === tag
+                                                ? "bg-gray-800 text-white border-gray-800 shadow-md"
+                                                : "bg-white text-gray-600 border-gray-200 active:bg-gray-50"
+                                                }`}
+                                        >
+                                            <span className="mr-1">#</span>{tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-6 flex flex-col gap-4">
+                                {/* Unwatched */}
+                                <button
+                                    onClick={() => setShowUnwatchedOnly(!showUnwatchedOnly)}
+                                    className={`w-full py-3 rounded-xl font-bold transition-all duration-200 border flex items-center justify-center gap-3 ${showUnwatchedOnly
+                                        ? "bg-gray-800 text-white border-gray-800 shadow-md"
+                                        : "bg-white text-gray-500 border-gray-200 active:bg-gray-50"
+                                        }`}
+                                >
+                                    <span className={`w-3 h-3 rounded-full ${showUnwatchedOnly ? 'bg-green-400' : 'bg-gray-300'}`}></span>
+                                    未視聴のみ表示する
+                                </button>
+
+                                {/* Sort */}
+                                <div className="flex items-center justify-between bg-gray-50 p-1 rounded-xl">
+                                    <button
+                                        onClick={() => setSortOrder('desc')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'desc' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'
+                                            }`}
+                                    >
+                                        新しい順
+                                    </button>
+                                    <button
+                                        onClick={() => setSortOrder('asc')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'asc' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'
+                                            }`}
+                                    >
+                                        古い順
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={onClose}
+                                className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-transform"
+                            >
+                                閉じる
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HomeContent = ({ data, activeCategory, setActiveCategory, activeTag, setActiveTag, showUnwatchedOnly, setShowUnwatchedOnly, sortOrder, setSortOrder, toggleWatched, isWatched }) => {
+            const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+            // Filter active indicator
+            const hasActiveFilters = activeCategory !== "すべて" || activeTag !== null || showUnwatchedOnly;
+
+            return (
+                <div className="relative min-h-[calc(100vh-200px)]">
                     {/* Content List */}
-                    <main className="flex-1 p-4 md:p-6 bg-gray-50/50">
-                        {filteredData.length > 0 ? (
+                    <main className="flex-1 p-4 md:p-6 bg-gray-50/50 pb-24 md:pb-6">
+                        {data.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {filteredData.map(item => {
+                                {data.map(item => {
                                     const videoId = getYouTubeId(item.url);
                                     const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
                                     const watched = isWatched(item.id);
@@ -775,8 +983,154 @@
                         )}
                     </main>
 
+                    {/* FAB Button */}
+                    <button
+                        onClick={() => setIsFilterOpen(true)}
+                        className={`fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 bg-gray-900 text-white rounded-full px-6 py-4 shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 whitespace-nowrap ${hasActiveFilters ? "ring-4 ring-primary ring-offset-2" : ""
+                            }`}
+                    >
+                        {hasActiveFilters && (
+                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></span>
+                        )}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span className="font-bold text-sm">絞り込み</span>
+                    </button>
+
+                    <FilterModal
+                        isOpen={isFilterOpen}
+                        onClose={() => setIsFilterOpen(false)}
+                        activeCategory={activeCategory}
+                        setActiveCategory={setActiveCategory}
+                        activeTag={activeTag}
+                        setActiveTag={setActiveTag}
+                        showUnwatchedOnly={showUnwatchedOnly}
+                        setShowUnwatchedOnly={setShowUnwatchedOnly}
+                        sortOrder={sortOrder}
+                        setSortOrder={setSortOrder}
+                    />
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activePage, setActivePage] = useState("home"); // 'home' | 'profile' | 'concept'
+
+            // Home State
+            const [activeCategory, setActiveCategory] = useState("すべて");
+            const [activeTag, setActiveTag] = useState(null);
+            const [showUnwatchedOnly, setShowUnwatchedOnly] = useState(false);
+            const [sortOrder, setSortOrder] = useState("desc");
+
+            // Watched status state
+            const [watchedIds, setWatchedIds] = useState(() => {
+                const saved = localStorage.getItem('watchedIds');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const toggleWatched = (id) => {
+                setWatchedIds(prev => {
+                    if (!prev.includes(id)) {
+                        const updated = [...prev, id];
+                        localStorage.setItem('watchedIds', JSON.stringify(updated));
+                        return updated;
+                    }
+                    return prev;
+                });
+            };
+
+            const isWatched = (id) => watchedIds.includes(id);
+
+            const watchedPercentage = Math.round((watchedIds.length / DATA.length) * 100);
+
+            const filterByCategory = (item) => {
+                if (activeCategory === "すべて") return true;
+                return item.category === activeCategory;
+            };
+
+            const filterByTag = (item) => {
+                if (!activeTag) return true;
+                return item.tags && item.tags.includes(activeTag);
+            };
+
+            const filterByUnwatched = (item) => {
+                if (!showUnwatchedOnly) return true;
+                return !watchedIds.includes(item.id);
+            };
+
+            const filteredData = DATA
+                .filter(filterByCategory)
+                .filter(filterByTag)
+                .filter(filterByUnwatched)
+                .sort((a, b) => {
+                    if (a.year !== b.year) {
+                        return sortOrder === 'asc' ? a.year - b.year : b.year - a.year;
+                    }
+                    return a.title.localeCompare(b.title, 'ja');
+                });
+
+            return (
+                <div className="min-h-screen bg-white w-full max-w-md md:max-w-7xl mx-auto shadow-2xl flex flex-col border-x border-gray-100 my-0 md:my-8 md:rounded-3xl transition-all duration-300">
+                    {/* Header */}
+                    <header className="bg-gradient-to-br from-purple-600 via-primary to-fuchsia-600 text-white p-8 pb-12 text-center shadow-lg z-10 relative overflow-hidden transition-all duration-500 md:rounded-t-3xl">
+                        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/20 to-transparent"></div>
+
+                        {/* Numaochido Gauge */}
+                        <div className="absolute top-4 right-4 z-20 flex flex-col items-end">
+                            <span className="text-[10px] font-bold opacity-90 mb-1 text-shadow-sm">沼落ち度</span>
+                            <div className="flex items-center gap-2">
+                                <div className="w-20 md:w-32 h-2.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10 shadow-inner">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500 shadow-[0_0_10px_rgba(253,224,71,0.6)] transition-all duration-1000 ease-out"
+                                        style={{ width: `${watchedPercentage}%` }}
+                                    ></div>
+                                </div>
+                                <span className="text-sm font-bold tabular-nums text-shadow-sm">{watchedPercentage}%</span>
+                            </div>
+                        </div>
+
+                        <div className="relative z-10 flex flex-col items-center justify-center mt-6 transform transition-transform hover:scale-105 duration-500">
+                            <h1
+                                className="text-3xl md:text-5xl font-extrabold tracking-widest drop-shadow-lg font-['M_PLUS_Rounded_1c'] mb-3 text-white cursor-pointer"
+                                onClick={() => setActivePage('home')}
+                            >
+                                ようこそ！<span className="text-yellow-300">衣織沼</span>
+                            </h1>
+                            <div className="inline-block relative">
+                                <div className="absolute inset-0 bg-white/20 blur-lg rounded-full transform scale-110"></div>
+                                <p className="relative text-xs md:text-sm font-bold tracking-widest text-white/90 bg-white/10 px-6 py-1.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
+                                    ＝LOVE 野口衣織 非公式沼落ちガイド
+                                </p>
+                            </div>
+                        </div>
+                    </header>
+
+                    <NavMenu activePage={activePage} setActivePage={setActivePage} />
+
+                    <div className="flex-1 bg-gray-50/50">
+                        {activePage === 'home' && (
+                            <HomeContent
+                                data={filteredData}
+                                activeCategory={activeCategory}
+                                setActiveCategory={setActiveCategory}
+                                activeTag={activeTag}
+                                setActiveTag={setActiveTag}
+                                showUnwatchedOnly={showUnwatchedOnly}
+                                setShowUnwatchedOnly={setShowUnwatchedOnly}
+                                sortOrder={sortOrder}
+                                setSortOrder={setSortOrder}
+                                toggleWatched={toggleWatched}
+                                isWatched={isWatched}
+                            />
+                        )}
+                        {activePage === 'profile' && <Profile />}
+                        {activePage === 'concept' && <Concept />}
+                    </div>
+
                     {/* Footer */}
-                    <footer className="p-6 text-center text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50 space-y-2">
+                    <footer className="p-6 text-center text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50 space-y-2 md:rounded-b-3xl">
                         <p>当サイトは=LOVEのファンによる非公式サイトであり、使用している動画・画像の権利は全て権利者様に帰属します。<br className="hidden md:inline" />問題がある場合は速やかに削除いたします。</p>
                         <p>© 2024 Iori Noguchi Fan App MVP</p>
                     </footer>
