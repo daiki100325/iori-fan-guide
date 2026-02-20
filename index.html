@@ -95,7 +95,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         const DATA = [
             {
@@ -1195,6 +1195,19 @@
             const [isShareOpen, setIsShareOpen] = useState(false);
             const [shareType, setShareType] = useState('sns'); // 'sns' | 'numaochi'
 
+            // Gauge sticky logic
+            const headerRef = useRef(null);
+            const [gaugeFixed, setGaugeFixed] = useState(false);
+            useEffect(() => {
+                const onScroll = () => {
+                    if (headerRef.current) {
+                        setGaugeFixed(headerRef.current.getBoundingClientRect().bottom <= 0);
+                    }
+                };
+                window.addEventListener('scroll', onScroll, { passive: true });
+                return () => window.removeEventListener('scroll', onScroll);
+            }, []);
+
             // Home State
             const [activeCategory, setActiveCategory] = useState("すべて");
             const [activeTag, setActiveTag] = useState(null);
@@ -1251,7 +1264,7 @@
             return (
                 <div className="min-h-screen bg-white w-full max-w-md md:max-w-7xl mx-auto shadow-2xl flex flex-col border-x border-gray-100 my-0 md:my-8 md:rounded-3xl transition-all duration-300">
                     {/* Header */}
-                    <header className="bg-gradient-to-br from-purple-600 via-primary to-fuchsia-600 text-white px-4 pt-5 pb-8 shadow-lg z-10 relative overflow-hidden transition-all duration-500 md:rounded-t-3xl">
+                    <header ref={headerRef} className="bg-gradient-to-br from-purple-600 via-primary to-fuchsia-600 text-white px-4 pt-5 pb-8 shadow-lg z-10 relative overflow-hidden transition-all duration-500 md:rounded-t-3xl">
                         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/20 to-transparent"></div>
 
@@ -1275,10 +1288,11 @@
 
                     </header>
 
-                    {/* Numaochi Gauge Bar — sticky under header */}
+                    {/* Numaochi Gauge Bar — sticky (JS-controlled for cross-browser) */}
+                    {gaugeFixed && <div className="h-6" />}
                     <button
                         onClick={() => { setShareType('numaochi'); setIsShareOpen(true); }}
-                        className="sticky top-0 z-40 w-full h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity"
+                        className={`${gaugeFixed ? 'fixed top-0 left-0 right-0' : 'w-full'} z-40 h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity`}
                         style={{ background: '#e9d5ff' }}
                         title="沼落ち度をシェア"
                     >
