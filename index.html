@@ -1278,19 +1278,19 @@
                     {/* Numaochi Gauge Bar — full width, standalone under header */}
                     <button
                         onClick={() => { setShareType('numaochi'); setIsShareOpen(true); }}
-                        className="w-full relative h-6 bg-black/10 overflow-hidden flex items-center active:opacity-80 transition-opacity"
-                        style={{ background: '#1a0030' }}
+                        className="w-full relative h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity"
+                        style={{ background: '#e9d5ff' }}
                         title="沼落ち度をシェア"
                     >
                         {/* Filled portion */}
                         <div
-                            className="absolute left-0 top-0 h-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-yellow-400 transition-all duration-1000 ease-out"
-                            style={{ width: `${watchedPercentage}%` }}
+                            className="absolute left-0 top-0 h-full transition-all duration-1000 ease-out"
+                            style={{ width: `${watchedPercentage}%`, background: '#a855f7' }}
                         />
                         {/* Label */}
                         <div className="relative z-10 flex items-center justify-between w-full px-3">
-                            <span className="text-[11px] font-bold text-white/90 tracking-wider">沼落ち度&nbsp;<span className="text-yellow-300 font-extrabold">{watchedPercentage}%</span></span>
-                            <span className="text-white/60 text-sm">↗</span>
+                            <span className="text-[11px] font-bold tracking-wider" style={{ color: '#6b21a8' }}>沼落ち度&nbsp;<span className="font-extrabold">{watchedPercentage}%</span></span>
+                            <span className="text-sm" style={{ color: '#6b21a8' }}>↗</span>
                         </div>
                     </button>
 
