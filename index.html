@@ -1318,7 +1318,14 @@
                     </div>
 
                     {/* Footer */}
-                    <footer className="p-6 pb-24 md:pb-6 text-center text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50 space-y-2 md:rounded-b-3xl">
+                    <footer className="p-6 pb-24 md:pb-6 text-center text-[10px] text-gray-400 border-t border-gray-100 bg-gray-50 space-y-3 md:rounded-b-3xl">
+                        <button
+                            onClick={() => { setShareType('sns'); setIsShareOpen(true); }}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-gray-300 text-gray-500 text-xs font-bold hover:bg-gray-100 hover:border-gray-400 transition-all duration-200 active:scale-95"
+                        >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                            このサイトをXで紹介
+                        </button>
                         <p>当サイトは=LOVEのファンによる非公式サイトであり、使用している動画・画像の権利は全て権利者様に帰属します。<br className="hidden md:inline" />問題がある場合は速やかに削除いたします。</p>
                         <p>© 2026 Iori Noguchi Unofficial Fan Guide</p>
                     </footer>
