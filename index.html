@@ -612,13 +612,14 @@
                             </p>
                             <p className="text-xs text-blue-500 mt-3 break-all">{siteUrl}</p>
                             {!isSns && (
-                                <p className="text-xs text-gray-500 mt-3">#衣織沼</p>
+                                <p className="text-sm text-gray-800 mt-3">#衣織沼</p>
                             )}
                         </div>
                         {/* Nudge */}
-                        <p className="text-center text-xs text-gray-400 mb-4">
-                            {isSns ? 'あなたの好きな衣織は？' : '沼落ち度をシェアしよう！'}
-                        </p>
+                        {isSns && (
+                            <p className="text-center text-xs text-gray-400 mb-4">あなたの好きな衣織は？</p>
+                        )}
+                        {!isSns && <div className="mb-4" />}
                         {/* Share button */}
                         <a
                             href={tweetUrl}
