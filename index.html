@@ -1275,10 +1275,10 @@
 
                     </header>
 
-                    {/* Numaochi Gauge Bar — full width, standalone under header */}
+                    {/* Numaochi Gauge Bar — fixed at top */}
                     <button
                         onClick={() => { setShareType('numaochi'); setIsShareOpen(true); }}
-                        className="w-full relative h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity"
+                        className="fixed top-0 left-0 right-0 z-50 h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity"
                         style={{ background: '#e9d5ff' }}
                         title="沼落ち度をシェア"
                     >
@@ -1293,6 +1293,8 @@
                             <span className="text-sm" style={{ color: '#6b21a8' }}>↗</span>
                         </div>
                     </button>
+                    {/* Spacer to compensate for fixed gauge height */}
+                    <div className="h-6" />
 
                     <NavMenu activePage={activePage} setActivePage={setActivePage} />
                     <ShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} type={shareType} watchedPercentage={watchedPercentage} />
