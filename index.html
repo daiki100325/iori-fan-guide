@@ -13,6 +13,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ようこそ！衣織沼 ｜ ＝LOVE野口衣織 非公式沼落ちガイド</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <!-- OGP -->
     <meta property="og:title" content="ようこそ！衣織沼 ｜ ＝LOVE野口衣織 非公式沼落ちガイド">
     <meta property="og:description"
@@ -560,12 +561,18 @@
 
         // --- Components ---
 
-        const ShareModal = ({ isOpen, onClose, type, watchedPercentage }) => {
+        const ShareModal = ({ isOpen, onClose, type, watchedPercentage, kujiItem }) => {
             if (!isOpen) return null;
             const siteUrl = 'https://sukigamitsukaru.com/';
 
-            // SNS share (type === 'sns') or Numaochi share (type === 'numaochi')
-            const isSns = type !== 'numaochi';
+            // type: 'sns' | 'numaochi' | 'kuji'
+            const isKuji = type === 'kuji';
+            const isSns = !isKuji && type !== 'numaochi';
+
+            // くじシェアのツイート文
+            const kujiTweetText = isKuji && kujiItem
+                ? `今日の衣織くじは【${kujiItem.title}】でした！\n${kujiItem.url}\n\n今日のあなたにぴったりの衣織さんは？\n#今日の衣織くじ #衣織沼\n${siteUrl}`
+                : '';
 
             // SNSシェア：「ようこそ！ #衣織沼\nあなたの好きが見つかる\n\n{URL}」
             // 沼落ち度シェア：「沼落ち度：{n}%\nあなたの好きが見つかる\n\n{URL}\n\n#衣織沼」
@@ -575,14 +582,18 @@
             const tweetSuffix = isSns
                 ? ''
                 : `\n\n#衣織沼`;
-            const tweetUrl = isSns
-                ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('\n' + siteUrl)}`
-                : `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText + '\n\n' + siteUrl + tweetSuffix)}`;
+            const tweetUrl = isKuji
+                ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(kujiTweetText)}`
+                : isSns
+                    ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent('\n' + siteUrl)}`
+                    : `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText + '\n\n' + siteUrl + tweetSuffix)}`;
 
             // Preview display
-            const previewMain = isSns
-                ? `ようこそ！ #衣織沼\nあなたの好きが見つかる`
-                : `沼落ち度：${watchedPercentage}%\nあなたの好きが見つかる`;
+            const previewMain = isKuji && kujiItem
+                ? `今日の衣織くじは【${kujiItem.title}】でした！\n${kujiItem.url}`
+                : isSns
+                    ? `ようこそ！ #衣織沼\nあなたの好きが見つかる`
+                    : `沼落ち度：${watchedPercentage}%\nあなたの好きが見つかる`;
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -610,16 +621,26 @@
                             <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
                                 {previewMain}
                             </p>
-                            <p className="text-xs text-blue-500 mt-3 break-all">{siteUrl}</p>
-                            {!isSns && (
-                                <p className="text-sm text-gray-800 mt-3">#衣織沼</p>
+                            {isKuji ? (
+                                <>
+                                    <p className="text-sm text-gray-800 mt-3 whitespace-pre-line">{`\n今日のあなたにぴったりの衣織さんは？\n#今日の衣織くじ #衣織沼`}</p>
+                                    <p className="text-xs text-blue-500 mt-2 break-all">{siteUrl}</p>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-xs text-blue-500 mt-3 break-all">{siteUrl}</p>
+                                    {!isSns && (
+                                        <p className="text-sm text-gray-800 mt-3">#衣織沼</p>
+                                    )}
+                                </>
                             )}
                         </div>
                         {/* Nudge */}
                         {isSns && (
                             <p className="text-center text-xs text-gray-400 mb-4">あなたの好きな衣織は？</p>
                         )}
-                        {!isSns && <div className="mb-4" />}
+                        {!isSns && !isKuji && <div className="mb-4" />}
+                        {isKuji && <div className="mb-4" />}
                         {/* Share button */}
                         <a
                             href={tweetUrl}
@@ -642,6 +663,13 @@
                     id: 'home', label: '沼ガイド', icon: (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                    )
+                },
+                {
+                    id: 'kuji', label: '衣織くじ', icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
                         </svg>
                     )
                 },
@@ -684,140 +712,377 @@
             );
         };
 
+
         const Profile = () => {
             return (
-                <div className="p-6 md:p-10 bg-gray-50/50 min-h-[500px]">
-                    <div className="max-w-3xl mx-auto bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-8 animate-[fadeIn_0.5s_ease-out]">
-                        <div className="text-center space-y-2 border-b border-gray-100 pb-6">
+                <div className="p-4 md:p-8 bg-gray-50/50 min-h-[500px]">
+                    <div className="max-w-2xl mx-auto space-y-5 animate-[fadeIn_0.5s_ease-out]">
+
+                        {/* ページヘッダー */}
+                        <div className="text-center space-y-2 pt-2 pb-4">
                             <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">PROFILE</span>
                             <h2 className="text-3xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800">野口 衣織 とは？</h2>
                             <p className="text-primary font-bold tracking-widest text-sm">NOGUCHI IORI</p>
                         </div>
 
-                        <div className="space-y-6 md:px-12">
-                            <div className="bg-purple-50 p-6 rounded-2xl text-center">
-                                <p className="text-lg font-bold text-gray-800 mb-2">指原莉乃プロデュースのアイドルグループ<br /><span className="text-primary text-xl">「＝LOVE」</span>のメンバー</p>
+                        {/* ── ブロック1: 基本プロフィール ── */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
+                                <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                    </svg>
+                                </span>
+                                <h3 className="text-sm font-bold text-gray-700">基本プロフィール</h3>
                             </div>
+                            <div className="p-5 space-y-5">
+                                <div className="bg-purple-50 p-4 rounded-xl text-center">
+                                    <p className="text-base font-bold text-gray-800">指原莉乃プロデュースのアイドルグループ<br /><span className="text-primary text-lg">「＝LOVE」</span>のメンバー</p>
+                                </div>
 
-                            <div className="space-y-4">
-                                <div className="flex border-b border-gray-100 pb-2">
-                                    <span className="w-24 text-gray-400 font-bold text-sm">生年月日</span>
-                                    <span className="font-bold text-gray-700">2000年4月26日</span>
+                                <div className="divide-y divide-gray-100">
+                                    <div className="flex py-2.5">
+                                        <span className="w-20 text-gray-400 font-bold text-sm flex-shrink-0">生年月日</span>
+                                        <span className="font-bold text-gray-700 text-sm">2000年4月26日</span>
+                                    </div>
+                                    <div className="flex py-2.5">
+                                        <span className="w-20 text-gray-400 font-bold text-sm flex-shrink-0">出身地</span>
+                                        <span className="font-bold text-gray-700 text-sm">茨城県</span>
+                                    </div>
+                                    <div className="flex py-2.5">
+                                        <span className="w-20 text-gray-400 font-bold text-sm flex-shrink-0">血液型</span>
+                                        <span className="font-bold text-gray-700 text-sm">O型</span>
+                                    </div>
+                                    <div className="flex py-2.5">
+                                        <span className="w-20 text-gray-400 font-bold text-sm flex-shrink-0">星座</span>
+                                        <span className="font-bold text-gray-700 text-sm">おうし座</span>
+                                    </div>
+                                    <div className="flex py-2.5">
+                                        <span className="w-20 text-gray-400 font-bold text-sm flex-shrink-0">身長</span>
+                                        <span className="font-bold text-gray-700 text-sm">161cm</span>
+                                    </div>
                                 </div>
-                                <div className="flex border-b border-gray-100 pb-2">
-                                    <span className="w-24 text-gray-400 font-bold text-sm">出身地</span>
-                                    <span className="font-bold text-gray-700">茨城県</span>
-                                </div>
-                                <div className="flex border-b border-gray-100 pb-2">
-                                    <span className="w-24 text-gray-400 font-bold text-sm">血液型</span>
-                                    <span className="font-bold text-gray-700">O型</span>
-                                </div>
-                                <div className="flex border-b border-gray-100 pb-2">
-                                    <span className="w-24 text-gray-400 font-bold text-sm">星座</span>
-                                    <span className="font-bold text-gray-700">おうし座</span>
-                                </div>
-                                <div className="flex border-b border-gray-100 pb-2">
-                                    <span className="w-24 text-gray-400 font-bold text-sm">身長</span>
-                                    <span className="font-bold text-gray-700">161cm</span>
-                                </div>
+
+                                <p className="text-right text-[11px] text-gray-400">（引用：＝LOVE Official Fan Club プロフィール）</p>
                             </div>
+                        </div>
 
-                            <div className="text-right text-xs text-gray-400 mt-4">
-                                <p>（引用：＝LOVE Official Fan Club プロフィール）</p>
+                        {/* ── ブロック2: 公式リンク ── */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
+                                <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                                    </svg>
+                                </span>
+                                <h3 className="text-sm font-bold text-gray-700">公式リンク</h3>
                             </div>
-
-                            {/* 公式SNS・リンク */}
-                            <div className="mt-6 space-y-4">
-                                <h3 className="font-bold text-sm text-gray-500 text-center tracking-widest">公式リンク</h3>
+                            <div className="p-5 space-y-3">
 
                                 {/* 野口衣織 個人SNS */}
-                                <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
-                                    <p className="text-xs font-bold text-gray-400 mb-2">野口衣織</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        <a href="https://x.com/noguchi_iori" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                                            X
+                                <div className="bg-gray-50 rounded-xl overflow-hidden">
+                                    <p className="text-[11px] font-bold text-gray-400 px-4 pt-2.5 pb-1.5">野口衣織</p>
+                                    <div className="divide-y divide-gray-100">
+                                        <a href="https://x.com/noguchi_iori" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-black flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">X</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://www.instagram.com/noguchi_iori_/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
-                                            Instagram
+                                        <a href="https://www.instagram.com/noguchi_iori_/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">Instagram</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://www.showroom-live.com/room/profile?room_id=106016" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" /></svg>
-                                            Showroom
+                                        <a href="https://www.showroom-live.com/room/profile?room_id=106016" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">Showroom</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
                                     </div>
                                 </div>
 
                                 {/* イコラブ公式 */}
-                                <div className="bg-purple-50 rounded-2xl p-4 space-y-2">
-                                    <p className="text-xs font-bold text-primary/70 mb-2">＝LOVE 公式</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        <a href="https://x.com/Equal_LOVE_12" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                                            X
+                                <div className="bg-purple-50/60 rounded-xl overflow-hidden">
+                                    <p className="text-[11px] font-bold text-primary/60 px-4 pt-2.5 pb-1.5">＝LOVE 公式</p>
+                                    <div className="divide-y divide-purple-100/60">
+                                        <a href="https://x.com/Equal_LOVE_12" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-100/40 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-black flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">X</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://www.instagram.com/equal_love.official/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
-                                            Instagram
+                                        <a href="https://www.instagram.com/equal_love.official/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-100/40 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">Instagram</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://www.tiktok.com/@equal_love_12" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.73a8.28 8.28 0 004.84 1.55V6.84a4.85 4.85 0 01-1.07-.15z" /></svg>
-                                            TikTok
+                                        <a href="https://www.tiktok.com/@equal_love_12" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-100/40 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.73a8.28 8.28 0 004.84 1.55V6.84a4.85 4.85 0 01-1.07-.15z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">TikTok</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://equal-love.jp/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0c-2.5 2.5-3.9 5.8-4 9h8c-.1-3.2-1.5-6.5-4-9zm0 0c2.5 2.5 3.9 5.8 4 9m-8 0c.1 3.2 1.5 6.5 4 9m0 0c-2.5-2.5-3.9-5.8-4-9m8 0c-.1 3.2-1.5 6.5-4 9M2 12h20" /></svg>
-                                            公式HP
+                                        <a href="https://equal-love.jp/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-100/40 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0c-2.5 2.5-3.9 5.8-4 9h8c-.1-3.2-1.5-6.5-4-9zm0 0c2.5 2.5 3.9 5.8 4 9m-8 0c.1 3.2 1.5 6.5 4 9m0 0c-2.5-2.5-3.9-5.8-4-9m8 0c-.1 3.2-1.5 6.5-4 9M2 12h20" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">公式HP</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
-                                        <a href="https://www.youtube.com/@equallove_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
-                                            イコラブチャンネル
+                                        <a href="https://www.youtube.com/@equallove_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-100/40 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">イコラブチャンネル</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
                                     </div>
                                 </div>
 
-                                {/* イコノイジョイ */}
-                                <div className="bg-gray-50 rounded-2xl p-4">
-                                    <p className="text-xs font-bold text-gray-400 mb-2">関連チャンネル</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        <a href="https://www.youtube.com/@ikonoijoy" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full hover:opacity-80 transition-opacity">
-                                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
-                                            イコノイジョイチャンネル
+                                {/* 関連チャンネル */}
+                                <div className="bg-gray-50 rounded-xl overflow-hidden">
+                                    <p className="text-[11px] font-bold text-gray-400 px-4 pt-2.5 pb-1.5">関連チャンネル</p>
+                                    <div className="divide-y divide-gray-100">
+                                        <a href="https://www.youtube.com/@ikonoijoy" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 transition-colors group">
+                                            <span className="w-7 h-7 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
+                                            </span>
+                                            <span className="flex-1 text-sm font-bold text-gray-700">イコノイジョイチャンネル</span>
+                                            <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                                         </a>
                                     </div>
                                 </div>
+
                             </div>
+                        </div>
 
-                            {/* 衣織沼ポイント */}
-                            <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-100 rounded-2xl mt-6 overflow-hidden">
-                                <div className="bg-primary/10 px-6 py-3 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                        {/* ── ブロック3: 衣織沼ポイント ── */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
+                                <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                     </svg>
-                                    <h3 className="font-bold text-primary text-sm">衣織沼ポイント</h3>
+                                </span>
+                                <h3 className="text-sm font-bold text-gray-700">衣織沼ポイント</h3>
+                            </div>
+                            <div className="p-5 space-y-0 divide-y divide-gray-100">
+                                <div className="flex gap-3 py-4 first:pt-0">
+                                    <span className="text-xl flex-shrink-0">🎤</span>
+                                    <p className="text-sm text-gray-600 leading-relaxed">あらゆるジャンルの楽曲を歌いこなし踊りこなす、<span className="text-primary">努力型天才パフォーマー</span>。圧倒的な表現の幅を持ちます。</p>
                                 </div>
-                                <div className="p-6 space-y-4">
-                                    <div className="flex gap-3">
-                                        <span className="text-xl flex-shrink-0">🎤</span>
-                                        <p className="text-sm text-gray-600 leading-relaxed">あらゆるジャンルの楽曲を歌いこなし踊りこなす、努力型天才パフォーマー。圧倒的な表現の幅を持ちます。</p>
-                                    </div>
-                                    <div className="border-t border-purple-100"></div>
-                                    <div className="flex gap-3">
-                                        <span className="text-xl flex-shrink-0">✨</span>
-                                        <p className="text-sm text-gray-600 leading-relaxed">パフォーマーの顔、二次元がないと生きていけない二次元オタクの顔、メンバーの前で見せるガハハ笑い…見ていて飽きないギャップが最大の魅力。</p>
-                                    </div>
-                                    <div className="border-t border-purple-100"></div>
-                                    <div className="flex gap-3">
-                                        <span className="text-xl flex-shrink-0">🌟</span>
-                                        <p className="text-sm text-gray-600 leading-relaxed">アイドル活動に加え、バラエティ出演やアニメ・ゲームでの声優としての出演など、活躍の場はとどまるところを知りません。</p>
-                                    </div>
-                                    <div className="border-t border-purple-100"></div>
-                                    <div className="bg-primary/10 rounded-xl p-4 text-center">
-                                        <p className="text-sm font-bold text-primary">知れば知るほど抜け出せない「底なし沼」へようこそ。</p>
+                                <div className="flex gap-3 py-4">
+                                    <span className="text-xl flex-shrink-0">✨</span>
+                                    <p className="text-sm text-gray-600 leading-relaxed">パフォーマーの顔、二次元がないと生きていけない二次元オタクの顔、メンバーの前で見せるガハハ笑い…<span className="text-primary">見ていて飽きないギャップ</span>が最大の魅力。</p>
+                                </div>
+                                <div className="flex gap-3 py-4">
+                                    <span className="text-xl flex-shrink-0">🌟</span>
+                                    <p className="text-sm text-gray-600 leading-relaxed">アイドル活動に加え、<span className="text-primary">バラエティ出演やアニメ・ゲームでの声優としての出演</span>など、活躍の場はとどまるところを知りません。</p>
+                                </div>
+                                <div className="pt-4">
+                                    <div className="bg-primary/5 rounded-xl p-4 text-center">
+                                        <p className="text-sm font-bold text-primary">知れば知るほど抜け出せない<br className="sm:hidden" />「底なし沼」へようこそ。</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        // --- JST 日付文字列を返すユーティリティ ---
+        const getJstDateString = () => {
+            const now = new Date();
+            // JST = UTC+9
+            const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+            return jst.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+        };
+
+        const DailyKuji = ({ watchedIds, toggleWatched, isWatched }) => {
+            // localStorage から当日の状態を復元
+            const [drawnId, setDrawnId] = useState(() => {
+                const savedDate = localStorage.getItem('kujiDate');
+                const savedId = localStorage.getItem('kujiId');
+                if (savedDate === getJstDateString() && savedId !== null) {
+                    return parseInt(savedId, 10);
+                }
+                return null;
+            });
+            const [excludeWatched, setExcludeWatched] = useState(false);
+            const [isKujiShareOpen, setIsKujiShareOpen] = useState(false);
+
+            const alreadyDrawn = drawnId !== null;
+            const drawnItem = alreadyDrawn ? DATA.find(d => d.id === drawnId) : null;
+
+            const handleDraw = () => {
+                let pool = excludeWatched
+                    ? DATA.filter(d => !watchedIds.includes(d.id))
+                    : DATA;
+                // 全視聴済みならフォールバック
+                if (pool.length === 0) pool = DATA;
+                const picked = pool[Math.floor(Math.random() * pool.length)];
+                setDrawnId(picked.id);
+                localStorage.setItem('kujiDate', getJstDateString());
+                localStorage.setItem('kujiId', String(picked.id));
+            };
+
+            const videoId = drawnItem ? getYouTubeId(drawnItem.url) : null;
+            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
+            const watched = drawnItem ? isWatched(drawnItem.id) : false;
+
+            return (
+                <div className="p-4 md:p-8 bg-gray-50/50 min-h-[500px]">
+                    <div className="max-w-2xl mx-auto animate-[fadeIn_0.5s_ease-out]">
+
+                        {/* ページヘッダー */}
+                        <div className="text-center space-y-2 pt-2 pb-6">
+                            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">DAILY KUJI</span>
+                            <h2 className="text-3xl font-bold font-['M_PLUS_Rounded_1c'] text-gray-800">今日の衣織くじ</h2>
+                            <p className="text-sm text-gray-400">毎日１回、ランダムにコンテンツをご提案します</p>
+                        </div>
+
+                        {!alreadyDrawn ? (
+                            /* ── 未抽選：くじを引く画面 ── */
+                            <div className="flex flex-col items-center gap-5">
+                                {/* くじ演出アイコン */}
+                                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-400 to-fuchsia-500 flex items-center justify-center shadow-xl animate-pulse">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+                                    </svg>
+                                </div>
+
+                                {/* くじを引くボタン */}
+                                <button
+                                    onClick={handleDraw}
+                                    className="w-full max-w-xs bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white font-extrabold text-lg py-5 rounded-2xl shadow-xl hover:shadow-purple-300 hover:scale-105 active:scale-95 transition-all duration-300"
+                                >
+                                    🎯 くじを引く
+                                </button>
+
+                                {/* 視聴済み除外オプション */}
+                                <button
+                                    onClick={() => setExcludeWatched(v => !v)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 border ${excludeWatched
+                                        ? 'bg-gray-800 text-white border-gray-800'
+                                        : 'bg-white text-gray-400 border-gray-200 hover:border-gray-400'
+                                        }`}
+                                >
+                                    <span className={`w-3 h-3 rounded-full flex-shrink-0 transition-colors ${excludeWatched ? 'bg-green-400' : 'bg-gray-300'}`} />
+                                    視聴済みのコンテンツを除いてくじを引く
+                                </button>
+
+                                <p className="text-xs text-gray-400 text-center leading-relaxed">
+                                    衣織くじは１日１回引くことができます。<br />次のくじは明日 0:00 にリセットされます。
+                                </p>
+                            </div>
+                        ) : (
+                            /* ── 抽選済み：コンテンツ表示画面 ── */
+                            <div className="flex flex-col gap-4">
+                                <p className="text-center text-sm font-bold text-primary">✨ 今日の衣織はこちら！</p>
+
+                                {drawnItem && (
+                                    <div className={`group bg-white rounded-2xl border ${watched ? 'border-primary/30 bg-purple-50/30' : 'border-gray-100'
+                                        } shadow-sm overflow-hidden`}>
+                                        {thumbnailUrl && (
+                                            <div className="relative aspect-video w-full overflow-hidden">
+                                                <img
+                                                    src={thumbnailUrl}
+                                                    alt={drawnItem.title}
+                                                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${watched ? 'grayscale-[30%]' : ''}`}
+                                                />
+                                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
+                                                {watched && (
+                                                    <div className="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                        </svg>
+                                                        視聴済み
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div className="p-6">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className={`text-[10px] font-bold px-3 py-1 rounded-full text-white uppercase tracking-wider ${drawnItem.category === 'MV' ? 'bg-gradient-to-r from-pink-500 to-rose-500' :
+                                                    drawnItem.category === 'ライブ' ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                                                        drawnItem.category === '歌ってみた' ? 'bg-gradient-to-r from-purple-500 to-violet-500' :
+                                                            drawnItem.category === '踊ってみた' ? 'bg-gradient-to-r from-orange-500 to-amber-500' :
+                                                                drawnItem.category === 'フォーカス' ? 'bg-gradient-to-r from-yellow-500 to-amber-500' :
+                                                                    'bg-gray-500'
+                                                    }`}>{drawnItem.category}</span>
+                                                <span className="text-[10px] font-bold px-3 py-1 rounded-full text-gray-500 bg-gray-100 border border-gray-200">{drawnItem.year}年</span>
+                                            </div>
+                                            {drawnItem.tags && drawnItem.tags.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mb-2">
+                                                    {drawnItem.tags.map(tag => (
+                                                        <span key={tag} className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">#{tag}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <h3 className={`text-xl font-bold mb-3 leading-tight ${watched ? 'text-gray-500' : 'text-gray-800'}`}>
+                                                {drawnItem.title}
+                                            </h3>
+                                            <div className="relative mb-5">
+                                                <div className={`absolute top-0 left-0 w-1 h-full rounded-full ${watched ? 'bg-gray-300' : 'bg-primary/30'}`} />
+                                                <p className="text-sm text-gray-600 pl-4 py-1 italic leading-relaxed whitespace-pre-line">
+                                                    {drawnItem.comment}
+                                                </p>
+                                            </div>
+                                            <a
+                                                href={drawnItem.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={() => toggleWatched(drawnItem.id)}
+                                                className={`block w-full text-center border-2 font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${watched
+                                                    ? 'bg-secondary border-primary/50 text-primary hover:bg-primary hover:text-white'
+                                                    : 'bg-white border-primary text-primary hover:bg-primary hover:text-white'
+                                                    }`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                                </svg>
+                                                {watched ? 'もう一度見る' : '動画を見る'}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* シェアボタン */}
+                                <button
+                                    onClick={() => setIsKujiShareOpen(true)}
+                                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-purple-300 text-purple-500 text-xs font-bold bg-purple-50 hover:bg-purple-100 hover:border-purple-400 transition-all duration-200 active:scale-95"
+                                >
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                    くじ結果をXでシェア
+                                </button>
+
+                                {/* 説明文 */}
+                                <div className="text-center pt-1 pb-6 space-y-1">
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        衣織くじは１日１回引くことができます。<br />次のくじは明日 0:00（JST）にリセットされます。
+                                    </p>
+                                </div>
+
+                                <ShareModal
+                                    isOpen={isKujiShareOpen}
+                                    onClose={() => setIsKujiShareOpen(false)}
+                                    type="kuji"
+                                    kujiItem={drawnItem}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -870,7 +1135,7 @@
                                     <div>
                                         <h3 className="font-bold text-gray-700 mb-1">ページを切り替える</h3>
                                         <p className="text-xs text-gray-500 leading-relaxed">
-                                            画面下部（PCでは上部）のメニューから、「野口衣織とは？」や「サイトコンセプト」へ移動できます。
+                                            画面下部のメニューから、「野口衣織とは？」や「サイトコンセプト」へ移動できます。
                                         </p>
                                     </div>
                                 </div>
@@ -898,6 +1163,15 @@
                                         <h3 className="font-bold text-gray-700 mb-1">沼落ち度を上げる</h3>
                                         <p className="text-xs text-gray-500 leading-relaxed">
                                             再生した動画は自動で記録され、ヘッダーの「沼落ち度」ゲージが上昇します。100%を目指してください！
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center font-bold text-sm">5</div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-700 mb-1">沼から抜け出せなくなる</h3>
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            もう戻れない。沼の底で管理人がたまに書いているnoteは<a href="https://note.com/io_tv/all" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:opacity-70 transition-opacity">コチラ</a>。
                                         </p>
                                     </div>
                                 </div>
@@ -1293,18 +1567,18 @@
                     <button
                         onClick={() => { setShareType('numaochi'); setIsShareOpen(true); }}
                         className={`${gaugeFixed ? 'fixed top-0 left-0 right-0' : 'relative w-full'} z-40 h-6 overflow-hidden flex items-center active:opacity-80 transition-opacity`}
-                        style={{ background: '#e9d5ff' }}
+                        style={{ background: '#f3e8ff' }}
                         title="沼落ち度をシェア"
                     >
                         {/* Filled portion */}
                         <div
                             className="absolute left-0 top-0 h-full transition-all duration-1000 ease-out"
-                            style={{ width: `${watchedPercentage}%`, background: '#a855f7' }}
+                            style={{ width: `${watchedPercentage}%`, background: '#c4b5fd' }}
                         />
                         {/* Label */}
                         <div className="relative z-10 flex items-center justify-between w-full px-3">
-                            <span className="text-[11px] font-bold tracking-wider" style={{ color: '#6b21a8' }}>沼落ち度&nbsp;<span className="font-extrabold">{watchedPercentage}%</span></span>
-                            <span className="text-sm" style={{ color: '#6b21a8' }}>↗</span>
+                            <span className="text-[11px] font-bold tracking-wider" style={{ color: '#581c87' }}>沼落ち度&nbsp;<span className="font-extrabold">{watchedPercentage}%</span></span>
+                            <span className="text-sm" style={{ color: '#581c87' }}>↗</span>
                         </div>
                     </button>
 
@@ -1327,6 +1601,7 @@
                                 isWatched={isWatched}
                             />
                         )}
+                        {activePage === 'kuji' && <DailyKuji watchedIds={watchedIds} toggleWatched={toggleWatched} isWatched={isWatched} />}
                         {activePage === 'profile' && <Profile />}
                         {activePage === 'concept' && <Concept />}
                     </div>
