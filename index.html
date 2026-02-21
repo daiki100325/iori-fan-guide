@@ -574,85 +574,56 @@
         const GuidedTour = ({ isOpen, onClose }) => {
             if (!isOpen) return null;
 
-            const [step, setStep] = useState(0);
-            const [highlightRect, setHighlightRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
+            const [rects, setRects] = useState({ content: null, filter: null, kuji: null });
 
-            const steps = [
-                {
-                    targetId: 'tour-content-grid',
-                    icon: '🎤',
-                    title: '衣織さんフルフォーカス',
-                    text: 'ここに衣織さんフルフォーカスのコンテンツが並んでいます。彼女の魅力だけを詰め込んだ専用ガイドです。',
-                    buttonText: '次へ'
-                },
-                {
-                    targetId: 'tour-filter-button',
-                    icon: '🔍',
-                    title: '好みの衣織を探す',
-                    text: 'この「絞り込み」ボタンから、ジャンルや雰囲気であなたの好きな衣織を簡単に見つけられます。',
-                    buttonText: '次へ'
-                },
-                {
-                    targetId: 'tour-nav-kuji',
-                    icon: '🎯',
-                    title: '衣織くじ',
-                    text: 'このメニューから「衣織くじ」へ。1日1回、ランダムな衣織さんに出会えます。',
-                    buttonText: '沼落ちを開始する'
-                }
-            ];
-
-            const currentStep = steps[step];
-
-            const updateHighlight = () => {
-                const element = document.getElementById(currentStep.targetId);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    // スクロール位置を考慮
-                    setHighlightRect({
-                        top: rect.top,
-                        left: rect.left,
-                        width: rect.width,
-                        height: rect.height
-                    });
-
-                    // ターゲットを画面内にスクロール
-                    if (step === 0) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else if (step === 2) {
-                        // ナビゲーションは通常画面端にあるので特に移動なし
-                    } else {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
+            const updateHighlights = () => {
+                const content = document.getElementById('tour-content-grid')?.getBoundingClientRect();
+                const filter = document.getElementById('tour-filter-button')?.getBoundingClientRect();
+                const kuji = document.getElementById('tour-nav-kuji')?.getBoundingClientRect();
+                setRects({ content, filter, kuji });
             };
 
             useEffect(() => {
-                updateHighlight();
-                window.addEventListener('resize', updateHighlight);
-                return () => window.removeEventListener('resize', updateHighlight);
-            }, [step]);
+                updateHighlights();
+                window.addEventListener('resize', updateHighlights);
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                return () => window.removeEventListener('resize', updateHighlights);
+            }, []);
 
-            const nextStep = () => {
-                if (step < steps.length - 1) {
-                    setStep(step + 1);
-                } else {
-                    onClose();
-                }
-            };
+            if (!rects.content || !rects.filter || !rects.kuji) return null;
 
             return (
                 <div className="fixed inset-0 z-[100] pointer-events-none">
-                    {/* SVG Overlay for Spotlight Effect */}
+                    {/* SVG Overlay for Multi-Spotlight */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-auto">
                         <defs>
-                            <mask id="spotlight-mask">
+                            <mask id="multi-spotlight-mask">
                                 <rect width="100%" height="100%" fill="white" />
+                                {/* Content Grid Spotlight */}
                                 <rect
-                                    x={highlightRect.left - 10}
-                                    y={highlightRect.top - 10}
-                                    width={highlightRect.width + 20}
-                                    height={highlightRect.height + 20}
-                                    rx="20"
+                                    x={rects.content.left - 6}
+                                    y={rects.content.top - 6}
+                                    width={rects.content.width + 12}
+                                    height={rects.content.height + 12}
+                                    rx="16"
+                                    fill="black"
+                                />
+                                {/* Filter Button Spotlight */}
+                                <rect
+                                    x={rects.filter.left - 6}
+                                    y={rects.filter.top - 6}
+                                    width={rects.filter.width + 12}
+                                    height={rects.filter.height + 12}
+                                    rx="24"
+                                    fill="black"
+                                />
+                                {/* Kuji Item Spotlight */}
+                                <rect
+                                    x={rects.kuji.left - 4}
+                                    y={rects.kuji.top - 4}
+                                    width={rects.kuji.width + 8}
+                                    height={rects.kuji.height + 8}
+                                    rx="12"
                                     fill="black"
                                 />
                             </mask>
@@ -660,46 +631,40 @@
                         <rect
                             width="100%"
                             height="100%"
-                            fill="rgba(0,0,0,0.7)"
-                            mask="url(#spotlight-mask)"
-                            className="transition-all duration-500 ease-in-out"
+                            fill="rgba(0,0,0,0.75)"
+                            mask="url(#multi-spotlight-mask)"
                         />
                     </svg>
 
-                    {/* Description Box */}
-                    <div
-                        className="absolute z-[110] w-full max-w-[280px] md:max-w-sm pointer-events-auto transition-all duration-500 ease-in-out"
-                        style={{
-                            top: step === 2 ? 'auto' : Math.min(window.innerHeight - 300, highlightRect.top + highlightRect.height + 20),
-                            bottom: step === 2 ? (window.innerHeight - highlightRect.top + 20) : 'auto',
-                            left: '50%',
-                            transform: 'translateX(-50%)'
-                        }}
-                    >
-                        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 animate-[slideUp_0.4s_ease-out]">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="text-3xl">{currentStep.icon}</span>
-                                <div className="h-1 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-primary transition-all duration-500"
-                                        style={{ width: `${((step + 1) / steps.length) * 100}%` }}
-                                    ></div>
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-400">{step + 1} / {steps.length}</span>
+                    {/* Compact All-in-one Guide Card */}
+                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center px-6 pointer-events-none">
+                        <div className="bg-white rounded-[2rem] shadow-2xl p-6 w-full max-w-[260px] pointer-events-auto animate-[fadeIn_0.4s_ease-out] border border-purple-100">
+                            <div className="text-center mb-5">
+                                <h3 className="text-sm font-extrabold text-gray-800 font-['M_PLUS_Rounded_1c']">
+                                    衣織沼の歩き方
+                                </h3>
                             </div>
 
-                            <h3 className="text-lg font-extrabold text-gray-800 mb-2 font-['M_PLUS_Rounded_1c']">
-                                {currentStep.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 leading-relaxed mb-6 italic">
-                                {currentStep.text}
-                            </p>
+                            <div className="space-y-4 mb-6">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg grayscale-[0.2]">🎤</span>
+                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">彼女だけのフルフォーカス動画</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg grayscale-[0.2]">🔍</span>
+                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">感性や雰囲気で直感検索</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg grayscale-[0.2]">🎯</span>
+                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">毎日1回ランダムな出会い</p>
+                                </div>
+                            </div>
 
                             <button
-                                onClick={nextStep}
-                                className="w-full bg-primary text-white font-extrabold py-4 rounded-2xl shadow-lg shadow-purple-100 hover:shadow-purple-200 active:scale-95 transition-all duration-200"
+                                onClick={onClose}
+                                className="w-full bg-primary text-white font-extrabold py-3 rounded-2xl shadow-xl shadow-purple-100 active:scale-95 transition-all text-xs tracking-tighter"
                             >
-                                {currentStep.buttonText}
+                                沼落ちを開始する
                             </button>
                         </div>
                     </div>
