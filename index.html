@@ -580,7 +580,11 @@
                 const content = document.getElementById('tour-content-grid')?.getBoundingClientRect();
                 const filter = document.getElementById('tour-filter-button')?.getBoundingClientRect();
                 const kuji = document.getElementById('tour-nav-kuji')?.getBoundingClientRect();
-                setRects({ content, filter, kuji });
+                setRects({
+                    content: content ? { top: content.top, left: content.left, width: content.width, height: content.height } : null,
+                    filter: filter ? { top: filter.top, left: filter.left, width: filter.width, height: filter.height } : null,
+                    kuji: kuji ? { top: kuji.top, left: kuji.left, width: kuji.width, height: kuji.height } : null
+                });
             };
 
             useEffect(() => {
@@ -592,6 +596,35 @@
 
             if (!rects.content || !rects.filter || !rects.kuji) return null;
 
+            // ラベルコンポーネント（内部用）
+            const Label = ({ rect, text, icon, position = 'bottom' }) => {
+                const style = {};
+                if (position === 'bottom') {
+                    style.top = rect.top + rect.height + 12;
+                    style.left = rect.left + rect.width / 2;
+                } else if (position === 'top') {
+                    style.bottom = window.innerHeight - rect.top + 12;
+                    style.left = rect.left + rect.width / 2;
+                } else if (position === 'left') {
+                    style.top = rect.top + rect.height / 2;
+                    style.right = window.innerWidth - rect.left + 12;
+                }
+
+                return (
+                    <div
+                        className="absolute z-[110] -translate-x-1/2 flex flex-col items-center animate-[fadeIn_0.5s_ease-out] pointer-events-none"
+                        style={style}
+                    >
+                        {position === 'bottom' && <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-bottom-[6px] border-b-white"></div>}
+                        <div className="bg-white px-3 py-2 rounded-xl shadow-xl border border-purple-100 flex items-center gap-2 whitespace-nowrap">
+                            <span className="text-base">{icon}</span>
+                            <span className="text-[10px] font-extrabold text-gray-700 tracking-tighter">{text}</span>
+                        </div>
+                        {position === 'top' && <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white"></div>}
+                    </div>
+                );
+            };
+
             return (
                 <div className="fixed inset-0 z-[100] pointer-events-none">
                     {/* SVG Overlay for Multi-Spotlight */}
@@ -599,74 +632,47 @@
                         <defs>
                             <mask id="multi-spotlight-mask">
                                 <rect width="100%" height="100%" fill="white" />
-                                {/* Content Grid Spotlight */}
-                                <rect
-                                    x={rects.content.left - 6}
-                                    y={rects.content.top - 6}
-                                    width={rects.content.width + 12}
-                                    height={rects.content.height + 12}
-                                    rx="16"
-                                    fill="black"
-                                />
-                                {/* Filter Button Spotlight */}
-                                <rect
-                                    x={rects.filter.left - 6}
-                                    y={rects.filter.top - 6}
-                                    width={rects.filter.width + 12}
-                                    height={rects.filter.height + 12}
-                                    rx="24"
-                                    fill="black"
-                                />
-                                {/* Kuji Item Spotlight */}
-                                <rect
-                                    x={rects.kuji.left - 4}
-                                    y={rects.kuji.top - 4}
-                                    width={rects.kuji.width + 8}
-                                    height={rects.kuji.height + 8}
-                                    rx="12"
-                                    fill="black"
-                                />
+                                <rect x={rects.content.left - 6} y={rects.content.top - 6} width={rects.content.width + 12} height={rects.content.height + 12} rx="16" fill="black" />
+                                <rect x={rects.filter.left - 6} y={rects.filter.top - 6} width={rects.filter.width + 12} height={rects.filter.height + 12} rx="24" fill="black" />
+                                <rect x={rects.kuji.left - 4} y={rects.kuji.top - 4} width={rects.kuji.width + 8} height={rects.kuji.height + 8} rx="12" fill="black" />
                             </mask>
                         </defs>
-                        <rect
-                            width="100%"
-                            height="100%"
-                            fill="rgba(0,0,0,0.75)"
-                            mask="url(#multi-spotlight-mask)"
-                        />
+                        <rect width="100%" height="100%" fill="rgba(0,0,0,0.7)" mask="url(#multi-spotlight-mask)" onClick={onClose} />
                     </svg>
 
-                    {/* Compact All-in-one Guide Card */}
-                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center px-6 pointer-events-none">
-                        <div className="bg-white rounded-[2rem] shadow-2xl p-6 w-full max-w-[260px] pointer-events-auto animate-[fadeIn_0.4s_ease-out] border border-purple-100">
-                            <div className="text-center mb-5">
-                                <h3 className="text-sm font-extrabold text-gray-800 font-['M_PLUS_Rounded_1c']">
-                                    衣織沼の歩き方
-                                </h3>
-                            </div>
+                    {/* Independent Labels */}
+                    <Label
+                        rect={rects.content}
+                        icon="🎤"
+                        text="衣織フルフォーカス動画"
+                        position="bottom"
+                    />
 
-                            <div className="space-y-4 mb-6">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-lg grayscale-[0.2]">🎤</span>
-                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">彼女だけのフルフォーカス動画</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-lg grayscale-[0.2]">🔍</span>
-                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">感性や雰囲気で直感検索</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-lg grayscale-[0.2]">🎯</span>
-                                    <p className="text-[11px] font-bold text-gray-600 tracking-tighter">毎日1回ランダムな出会い</p>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={onClose}
-                                className="w-full bg-primary text-white font-extrabold py-3 rounded-2xl shadow-xl shadow-purple-100 active:scale-95 transition-all text-xs tracking-tighter"
-                            >
-                                沼落ちを開始する
-                            </button>
+                    <div
+                        className="absolute z-[110] flex flex-col items-end animate-[fadeIn_0.5s_ease-out] pointer-events-none"
+                        style={{ top: rects.filter.top + rects.filter.height / 2, right: window.innerWidth - rects.filter.left + 8, transform: 'translateY(-50%)' }}
+                    >
+                        <div className="bg-white px-3 py-2 rounded-xl shadow-xl border border-purple-100 flex items-center gap-2 whitespace-nowrap">
+                            <span className="text-base">🔍</span>
+                            <span className="text-[10px] font-extrabold text-gray-700 tracking-tighter">ジャンルや雰囲気で検索</span>
                         </div>
+                    </div>
+
+                    <Label
+                        rect={rects.kuji}
+                        icon="🎯"
+                        text="ランダムな衣織に出会える"
+                        position="top"
+                    />
+
+                    {/* Central Finish Button */}
+                    <div className="absolute inset-x-0 bottom-32 flex justify-center pointer-events-none">
+                        <button
+                            onClick={onClose}
+                            className="pointer-events-auto bg-primary text-white font-extrabold px-8 py-3 rounded-2xl shadow-2xl active:scale-95 transition-all text-xs tracking-widest animate-[bounce_2s_infinite]"
+                        >
+                            わかった！
+                        </button>
                     </div>
                 </div>
             );
