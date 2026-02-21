@@ -577,7 +577,7 @@
             const [rects, setRects] = useState({ content: null, filter: null, kuji: null });
 
             const updateHighlights = () => {
-                const content = document.getElementById('tour-content-grid')?.getBoundingClientRect();
+                const content = document.getElementById('tour-first-card')?.getBoundingClientRect();
                 const filter = document.getElementById('tour-filter-button')?.getBoundingClientRect();
                 const kuji = document.getElementById('tour-nav-kuji')?.getBoundingClientRect();
                 setRects({
@@ -638,25 +638,27 @@
                             </mask>
                         </defs>
                         <rect width="100%" height="100%" fill="rgba(0,0,0,0.7)" mask="url(#multi-spotlight-mask)" onClick={onClose} />
+
+                        {/* Highlights with borders */}
+                        <rect x={rects.content.left - 6} y={rects.content.top - 6} width={rects.content.width + 12} height={rects.content.height + 12} rx="16" fill="none" stroke="white" strokeWidth="2" strokeDasharray="4 4" className="animate-[pulse_2s_infinite]" />
+                        <rect x={rects.filter.left - 6} y={rects.filter.top - 6} width={rects.filter.width + 12} height={rects.filter.height + 12} rx="24" fill="none" stroke="white" strokeWidth="2" strokeDasharray="4 4" className="animate-[pulse_2s_infinite]" />
+                        <rect x={rects.kuji.left - 4} y={rects.kuji.top - 4} width={rects.kuji.width + 8} height={rects.kuji.height + 8} rx="12" fill="none" stroke="white" strokeWidth="2" strokeDasharray="4 4" className="animate-[pulse_2s_infinite]" />
                     </svg>
 
                     {/* Independent Labels */}
                     <Label
                         rect={rects.content}
                         icon="🎤"
-                        text="衣織フルフォーカス動画"
-                        position="bottom"
+                        text="衣織さん特化のコンテンツ"
+                        position="top"
                     />
 
-                    <div
-                        className="absolute z-[110] flex flex-col items-end animate-[fadeIn_0.5s_ease-out] pointer-events-none"
-                        style={{ top: rects.filter.top + rects.filter.height / 2, right: window.innerWidth - rects.filter.left + 8, transform: 'translateY(-50%)' }}
-                    >
-                        <div className="bg-white px-3 py-2 rounded-xl shadow-xl border border-purple-100 flex items-center gap-2 whitespace-nowrap">
-                            <span className="text-base">🔍</span>
-                            <span className="text-[10px] font-extrabold text-gray-700 tracking-tighter">ジャンルや雰囲気で検索</span>
-                        </div>
-                    </div>
+                    <Label
+                        rect={rects.filter}
+                        icon="🔍"
+                        text="ジャンルや雰囲気で絞り込み"
+                        position="top"
+                    />
 
                     <Label
                         rect={rects.kuji}
@@ -671,7 +673,7 @@
                             onClick={onClose}
                             className="pointer-events-auto bg-primary text-white font-extrabold px-8 py-3 rounded-2xl shadow-2xl active:scale-95 transition-all text-xs tracking-widest animate-[bounce_2s_infinite]"
                         >
-                            わかった！
+                            沼を覗いてみる
                         </button>
                     </div>
                 </div>
@@ -1495,13 +1497,17 @@
                     <main className="flex-1 p-4 md:p-6 bg-gray-50/50 pb-24">
                         {data.length > 0 ? (
                             <div id="tour-content-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {data.map(item => {
+                                {data.map((item, index) => {
                                     const videoId = getYouTubeId(item.url);
                                     const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
                                     const watched = isWatched(item.id);
 
                                     return (
-                                        <div key={item.id} className={`group bg-white rounded-2xl border ${watched ? 'border-primary/30 bg-purple-50/30' : 'border-gray-100'} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 h-full flex flex-col`}>
+                                        <div
+                                            key={item.id}
+                                            id={index === 0 ? "tour-first-card" : undefined}
+                                            className={`group bg-white rounded-2xl border ${watched ? 'border-primary/30 bg-purple-50/30' : 'border-gray-100'} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 h-full flex flex-col`}
+                                        >
                                             {thumbnailUrl && (
                                                 <div className="relative aspect-video w-full overflow-hidden">
                                                     <img
