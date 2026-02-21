@@ -599,12 +599,16 @@
             // ラベルコンポーネント（内部用）
             const Label = ({ rect, text, icon, position = 'bottom' }) => {
                 const style = {};
+                // 画面端からの最小余白
+                const margin = 16;
+                const leftPos = rect.left + rect.width / 2;
+
                 if (position === 'bottom') {
                     style.top = rect.top + rect.height + 12;
-                    style.left = rect.left + rect.width / 2;
+                    style.left = `clamp(${margin}px, ${leftPos}px, calc(100vw - ${margin}px))`;
                 } else if (position === 'top') {
                     style.bottom = window.innerHeight - rect.top + 12;
-                    style.left = rect.left + rect.width / 2;
+                    style.left = `clamp(${margin}px, ${leftPos}px, calc(100vw - ${margin}px))`;
                 }
 
                 return (
@@ -642,17 +646,16 @@
                         <rect x={rects.kuji.left - 4} y={rects.kuji.top - 4} width={rects.kuji.width + 8} height={rects.kuji.height + 8} rx="12" fill="none" stroke="white" strokeWidth="2" strokeDasharray="4 4" className="animate-[pulse_2s_infinite]" />
                     </svg>
 
-                    {/* Independent Labels */}
                     {/* Finish Button: Directly above the content label */}
                     <div
                         className="absolute z-[120] -translate-x-1/2 flex flex-col items-center pointer-events-none px-4"
-                        style={{ bottom: window.innerHeight - rects.content.top + 80, left: rects.content.left + rects.content.width / 2 }}
+                        style={{ bottom: window.innerHeight - rects.content.top + 100, left: `clamp(16px, ${rects.content.left + rects.content.width / 2}px, calc(100vw - 16px))` }}
                     >
                         <button
                             onClick={onClose}
-                            className="pointer-events-auto bg-primary text-white font-black px-10 py-5 rounded-3xl shadow-[0_20px_50px_rgba(147,51,234,0.4)] active:scale-95 transition-all text-sm md:text-lg tracking-[0.2em] animate-[bounce_2s_infinite] whitespace-nowrap min-w-[200px]"
+                            className="pointer-events-auto bg-primary text-white font-black px-12 py-6 rounded-3xl shadow-[0_25px_60px_rgba(147,51,234,0.5)] active:scale-95 transition-all text-lg md:text-2xl tracking-[0.2em] animate-[bounce_2s_infinite] whitespace-nowrap min-w-[240px]"
                         >
-                            沼を覗いてみる
+                            わかりました
                         </button>
                     </div>
 
