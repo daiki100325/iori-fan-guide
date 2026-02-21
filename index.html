@@ -597,17 +597,17 @@
             if (!rects.content || !rects.filter || !rects.kuji) return null;
 
             // ラベルコンポーネント（内部用）
-            const Label = ({ rect, text, icon, position = 'bottom' }) => {
+            const Label = ({ rect, text, icon, position = 'bottom', alignOffset = 0.5 }) => {
                 const style = {};
                 // 画面端からの最小余白
                 const margin = 16;
-                const leftPos = rect.left + rect.width / 2;
+                const leftPos = rect.left + rect.width * alignOffset;
 
                 if (position === 'bottom') {
-                    style.top = rect.top + rect.height + 12;
+                    style.top = rect.top + rect.height + 8;
                     style.left = `clamp(${margin}px, ${leftPos}px, calc(100vw - ${margin}px))`;
                 } else if (position === 'top') {
-                    style.bottom = window.innerHeight - rect.top + 12;
+                    style.bottom = window.innerHeight - rect.top + 8;
                     style.left = `clamp(${margin}px, ${leftPos}px, calc(100vw - ${margin}px))`;
                 }
 
@@ -617,7 +617,7 @@
                         style={style}
                     >
                         {position === 'bottom' && <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>}
-                        <div className="bg-white px-4 py-2.5 rounded-2xl shadow-2xl border border-purple-100 flex items-center gap-2.5 whitespace-nowrap overflow-hidden">
+                        <div className="bg-white px-4 py-1.5 rounded-2xl shadow-2xl border border-purple-100 flex items-center gap-2.5 whitespace-nowrap overflow-hidden">
                             <span className="text-xl">{icon}</span>
                             <span className="text-sm font-black text-gray-800 tracking-tight">{text}</span>
                         </div>
@@ -646,19 +646,20 @@
                         <rect x={rects.kuji.left - 4} y={rects.kuji.top - 4} width={rects.kuji.width + 8} height={rects.kuji.height + 8} rx="12" fill="none" stroke="white" strokeWidth="2" strokeDasharray="4 4" className="animate-[pulse_2s_infinite]" />
                     </svg>
 
-                    {/* Finish Button: Directly above the content label */}
+                    {/* Finish Button: OK Button relocated to avoid overlap */}
                     <div
                         className="absolute z-[120] -translate-x-1/2 flex flex-col items-center pointer-events-none px-4"
-                        style={{ bottom: window.innerHeight - rects.content.top + 60, left: `clamp(16px, ${rects.content.left + rects.content.width / 2}px, calc(100vw - 16px))` }}
+                        style={{ bottom: window.innerHeight - rects.content.top + 70, left: `clamp(16px, ${rects.content.left + rects.content.width / 2}px, calc(100vw - 16px))` }}
                     >
                         <button
                             onClick={onClose}
-                            className="pointer-events-auto bg-primary text-white font-black px-12 py-6 rounded-3xl shadow-[0_25px_60px_rgba(147,51,234,0.5)] active:scale-95 transition-all text-lg md:text-2xl tracking-[0.2em] whitespace-nowrap min-w-[240px]"
+                            className="pointer-events-auto bg-primary text-white font-black px-12 py-3 rounded-3xl shadow-[0_20px_50px_rgba(147,51,234,0.4)] active:scale-95 transition-all text-xl md:text-3xl tracking-[0.2em] whitespace-nowrap min-w-[160px]"
                         >
-                            わかりました
+                            OK
                         </button>
                     </div>
 
+                    {/* Independent Labels */}
                     <Label
                         rect={rects.content}
                         icon="🎤"
@@ -671,6 +672,7 @@
                         icon="🔍"
                         text="ジャンルで絞り込み"
                         position="top"
+                        alignOffset={0.25}
                     />
 
                     <Label
