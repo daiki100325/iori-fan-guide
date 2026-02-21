@@ -571,74 +571,135 @@
 
         // --- Components ---
 
-        const OnboardingModal = ({ isOpen, onClose }) => {
+        const GuidedTour = ({ isOpen, onClose }) => {
             if (!isOpen) return null;
 
+            const [step, setStep] = useState(0);
+            const [highlightRect, setHighlightRect] = useState({ top: 0, left: 0, width: 0, height: 0 });
+
+            const steps = [
+                {
+                    targetId: 'tour-content-grid',
+                    icon: '🎤',
+                    title: '衣織さんフルフォーカス',
+                    text: 'ここに衣織さんフルフォーカスのコンテンツが並んでいます。彼女の魅力だけを詰め込んだ専用ガイドです。',
+                    buttonText: '次へ'
+                },
+                {
+                    targetId: 'tour-filter-button',
+                    icon: '🔍',
+                    title: '好みの衣織を探す',
+                    text: 'この「絞り込み」ボタンから、ジャンルや雰囲気であなたの好きな衣織を簡単に見つけられます。',
+                    buttonText: '次へ'
+                },
+                {
+                    targetId: 'tour-nav-kuji',
+                    icon: '🎯',
+                    title: '衣織くじ',
+                    text: 'このメニューから「衣織くじ」へ。1日1回、ランダムな衣織さんに出会えます。',
+                    buttonText: '沼落ちを開始する'
+                }
+            ];
+
+            const currentStep = steps[step];
+
+            const updateHighlight = () => {
+                const element = document.getElementById(currentStep.targetId);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    // スクロール位置を考慮
+                    setHighlightRect({
+                        top: rect.top,
+                        left: rect.left,
+                        width: rect.width,
+                        height: rect.height
+                    });
+
+                    // ターゲットを画面内にスクロール
+                    if (step === 0) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else if (step === 2) {
+                        // ナビゲーションは通常画面端にあるので特に移動なし
+                    } else {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            };
+
+            useEffect(() => {
+                updateHighlight();
+                window.addEventListener('resize', updateHighlight);
+                return () => window.removeEventListener('resize', updateHighlight);
+            }, [step]);
+
+            const nextStep = () => {
+                if (step < steps.length - 1) {
+                    setStep(step + 1);
+                } else {
+                    onClose();
+                }
+            };
+
             return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    {/* Backdrop with strong blur */}
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-500"
-                        style={{ animation: 'fadeIn 0.5s ease-out' }}
-                    ></div>
+                <div className="fixed inset-0 z-[100] pointer-events-none">
+                    {/* SVG Overlay for Spotlight Effect */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-auto">
+                        <defs>
+                            <mask id="spotlight-mask">
+                                <rect width="100%" height="100%" fill="white" />
+                                <rect
+                                    x={highlightRect.left - 10}
+                                    y={highlightRect.top - 10}
+                                    width={highlightRect.width + 20}
+                                    height={highlightRect.height + 20}
+                                    rx="20"
+                                    fill="black"
+                                />
+                            </mask>
+                        </defs>
+                        <rect
+                            width="100%"
+                            height="100%"
+                            fill="rgba(0,0,0,0.7)"
+                            mask="url(#spotlight-mask)"
+                            className="transition-all duration-500 ease-in-out"
+                        />
+                    </svg>
 
-                    {/* Modal Content */}
+                    {/* Description Box */}
                     <div
-                        className="relative bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl transform transition-all duration-500 animate-[slideUp_0.5s_ease-out]"
-                        onClick={e => e.stopPropagation()}
+                        className="absolute z-[110] w-full max-w-[280px] md:max-w-sm pointer-events-auto transition-all duration-500 ease-in-out"
+                        style={{
+                            top: step === 2 ? 'auto' : Math.min(window.innerHeight - 300, highlightRect.top + highlightRect.height + 20),
+                            bottom: step === 2 ? (window.innerHeight - highlightRect.top + 20) : 'auto',
+                            left: '50%',
+                            transform: 'translateX(-50%)'
+                        }}
                     >
-                        {/* Decorative Header */}
-                        <div className="bg-gradient-to-br from-purple-600 to-primary h-32 flex items-center justify-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-                            <div className="text-center text-white z-10">
-                                <h2 className="text-2xl font-extrabold font-['M_PLUS_Rounded_1c'] tracking-wider mb-1">
-                                    ようこそ、<span className="text-yellow-300">衣織沼</span>へ
-                                </h2>
-                                <p className="text-[10px] font-bold tracking-[0.2em] opacity-80 uppercase">Noguchi Iori Fan Guide</p>
+                        <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 animate-[slideUp_0.4s_ease-out]">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="text-3xl">{currentStep.icon}</span>
+                                <div className="h-1 flex-1 bg-gray-100 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-primary transition-all duration-500"
+                                        style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+                                    ></div>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400">{step + 1} / {steps.length}</span>
                             </div>
-                        </div>
 
-                        <div className="p-8 md:p-10 space-y-8">
-                            <div className="space-y-6">
-                                {/* Point 1 */}
-                                <div className="flex gap-5 items-start">
-                                    <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm border border-purple-100">🎤</div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 text-base mb-1">衣織さんフルフォーカス</h3>
-                                        <p className="text-sm text-gray-500 leading-relaxed italic">
-                                            彼女の魅力だけに特化した、ファンによる非公式ガイドマップです。
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Point 2 */}
-                                <div className="flex gap-5 items-start">
-                                    <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm border border-purple-100">🔍</div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 text-base mb-1">好みの衣織を探す</h3>
-                                        <p className="text-sm text-gray-500 leading-relaxed italic">
-                                            画面下の<span className="font-bold text-primary mx-1">絞り込み</span>から、ジャンルや雰囲気で動画を検索できます。
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Point 3 */}
-                                <div className="flex gap-5 items-start">
-                                    <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center flex-shrink-0 text-2xl shadow-sm border border-purple-100">🎯</div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 text-base mb-1">毎日の出会い</h3>
-                                        <p className="text-sm text-gray-500 leading-relaxed italic">
-                                            <span className="font-bold text-primary mx-1">衣織くじ</span>では、1日1回ランダムな衣織さんに出会えます。
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                            <h3 className="text-lg font-extrabold text-gray-800 mb-2 font-['M_PLUS_Rounded_1c']">
+                                {currentStep.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-6 italic">
+                                {currentStep.text}
+                            </p>
 
                             <button
-                                onClick={onClose}
-                                className="w-full bg-primary text-white font-extrabold py-5 rounded-2xl shadow-xl shadow-purple-200 hover:shadow-purple-300 hover:scale-[1.02] active:scale-95 transition-all duration-300 text-lg tracking-widest"
+                                onClick={nextStep}
+                                className="w-full bg-primary text-white font-extrabold py-4 rounded-2xl shadow-lg shadow-purple-100 hover:shadow-purple-200 active:scale-95 transition-all duration-200"
                             >
-                                沼落ちを開始する
+                                {currentStep.buttonText}
                             </button>
                         </div>
                     </div>
@@ -795,6 +856,7 @@
                         {menuItems.map(item => (
                             <button
                                 key={item.id}
+                                id={item.id === 'kuji' ? 'tour-nav-kuji' : undefined}
                                 onClick={() => setActivePage(item.id)}
                                 className={`flex-1 flex flex-col items-center justify-center py-2 gap-1 transition-all duration-300 relative group active:scale-95 ${activePage === item.id ? 'text-primary' : 'text-gray-400 hover:text-gray-600'}`}
                             >
@@ -1461,7 +1523,7 @@
                     {/* Content List */}
                     <main className="flex-1 p-4 md:p-6 bg-gray-50/50 pb-24">
                         {data.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div id="tour-content-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {data.map(item => {
                                     const videoId = getYouTubeId(item.url);
                                     const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
@@ -1572,6 +1634,7 @@
 
                     {/* FAB Button */}
                     <button
+                        id="tour-filter-button"
                         onClick={() => setIsFilterOpen(true)}
                         className={`fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 bg-gray-900 text-white rounded-full px-6 py-4 shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 whitespace-nowrap ${hasActiveFilters ? "ring-4 ring-primary ring-offset-2" : ""
                             }`}
@@ -1732,7 +1795,7 @@
 
                     <NavMenu activePage={activePage} setActivePage={setActivePage} />
                     <ShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} type={shareType} watchedPercentage={watchedPercentage} />
-                    <OnboardingModal isOpen={showOnboarding} onClose={closeOnboarding} />
+                    <GuidedTour isOpen={showOnboarding} onClose={closeOnboarding} />
 
                     <div className="flex-1 bg-gray-50/50">
                         {activePage === 'home' && (
