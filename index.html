@@ -785,7 +785,10 @@
                             href={tweetUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={onClose}
+                            onClick={() => {
+                                gtag('event', 'share_click', { event_category: 'Virality', share_type: type });
+                                onClose();
+                            }}
                             className="flex items-center justify-center gap-2 w-full bg-black text-white font-bold py-3 rounded-2xl hover:opacity-80 transition-opacity text-sm"
                         >
                             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
@@ -1082,6 +1085,7 @@
                 setDrawnId(picked.id);
                 localStorage.setItem('kujiDate', getJstDateString());
                 localStorage.setItem('kujiId', String(picked.id));
+                gtag('event', 'kuji_draw', { event_category: 'Retention', event_label: picked.title });
             };
 
             const videoId = drawnItem ? getYouTubeId(drawnItem.url) : null;
@@ -1215,7 +1219,10 @@
                                                 href={drawnItem.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                onClick={() => toggleWatched(drawnItem.id)}
+                                                onClick={() => {
+                                                    gtag('event', 'video_click', { event_category: 'North Star', event_label: drawnItem.title });
+                                                    toggleWatched(drawnItem.id);
+                                                }}
                                                 className={`block w-full text-center border-2 font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${watched
                                                     ? 'bg-secondary border-primary/50 text-primary hover:bg-primary hover:text-white'
                                                     : 'bg-white border-primary text-primary hover:bg-primary hover:text-white'
@@ -1415,7 +1422,10 @@
                                     {CATEGORIES.map(cat => (
                                         <button
                                             key={cat}
-                                            onClick={() => setActiveCategory(cat)}
+                                            onClick={() => {
+                                                gtag('event', 'filter_use', { event_category: 'Discovery', filter_type: 'category', filter_value: cat });
+                                                setActiveCategory(cat);
+                                            }}
                                             className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 ${activeCategory === cat
                                                 ? "bg-primary text-white shadow-md ring-2 ring-primary ring-offset-1"
                                                 : "bg-gray-100 text-gray-500 active:bg-gray-200"
@@ -1434,7 +1444,11 @@
                                     {TAGS.map(tag => (
                                         <button
                                             key={tag}
-                                            onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                                            onClick={() => {
+                                                const newTag = activeTag === tag ? null : tag;
+                                                gtag('event', 'filter_use', { event_category: 'Discovery', filter_type: 'tag', filter_value: newTag || 'none' });
+                                                setActiveTag(newTag);
+                                            }}
                                             className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 border ${activeTag === tag
                                                 ? "bg-gray-800 text-white border-gray-800 shadow-md"
                                                 : "bg-white text-gray-600 border-gray-200 active:bg-gray-50"
@@ -1449,7 +1463,10 @@
                             <div className="border-t border-gray-100 pt-6 flex flex-col gap-4">
                                 {/* Unwatched */}
                                 <button
-                                    onClick={() => setShowUnwatchedOnly(!showUnwatchedOnly)}
+                                    onClick={() => {
+                                        gtag('event', 'filter_use', { event_category: 'Discovery', filter_type: 'unwatched', filter_value: !showUnwatchedOnly ? 'on' : 'off' });
+                                        setShowUnwatchedOnly(!showUnwatchedOnly);
+                                    }}
                                     className={`w-full py-3 rounded-xl font-bold transition-all duration-200 border flex items-center justify-center gap-3 ${showUnwatchedOnly
                                         ? "bg-gray-800 text-white border-gray-800 shadow-md"
                                         : "bg-white text-gray-500 border-gray-200 active:bg-gray-50"
@@ -1462,14 +1479,20 @@
                                 {/* Sort */}
                                 <div className="flex items-center justify-between bg-gray-50 p-1 rounded-xl">
                                     <button
-                                        onClick={() => setSortOrder('desc')}
+                                        onClick={() => {
+                                            gtag('event', 'filter_use', { event_category: 'Discovery', filter_type: 'sort', filter_value: 'desc' });
+                                            setSortOrder('desc');
+                                        }}
                                         className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'desc' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'
                                             }`}
                                     >
                                         新しい順
                                     </button>
                                     <button
-                                        onClick={() => setSortOrder('asc')}
+                                        onClick={() => {
+                                            gtag('event', 'filter_use', { event_category: 'Discovery', filter_type: 'sort', filter_value: 'asc' });
+                                            setSortOrder('asc');
+                                        }}
                                         className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${sortOrder === 'asc' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'
                                             }`}
                                     >
@@ -1574,7 +1597,10 @@
                                                     href={item.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    onClick={() => toggleWatched(item.id)}
+                                                    onClick={() => {
+                                                        gtag('event', 'video_click', { event_category: 'North Star', event_label: item.title });
+                                                        toggleWatched(item.id);
+                                                    }}
                                                     className={`block w-full text-center border-2 font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg mt-auto ${watched
                                                         ? "bg-secondary border-primary/50 text-primary hover:bg-primary hover:text-white"
                                                         : "bg-white border-primary text-primary hover:bg-primary hover:text-white"
@@ -1701,6 +1727,16 @@
             const isWatched = (id) => watchedIds.includes(id);
 
             const watchedPercentage = Math.round((watchedIds.length / DATA.length) * 100);
+
+            useEffect(() => {
+                if (watchedPercentage === 100) {
+                    const hasReached100 = localStorage.getItem('deep_swamp_reached_tracked');
+                    if (!hasReached100) {
+                        gtag('event', 'deep_swamp_reached', { event_category: 'Loyalty' });
+                        localStorage.setItem('deep_swamp_reached_tracked', 'true');
+                    }
+                }
+            }, [watchedPercentage]);
 
             const filterByCategory = (item) => {
                 if (activeCategory === "すべて") return true;
